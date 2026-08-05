@@ -1,21 +1,40 @@
-# Engineering-Focused RAG Evaluation Platform for Embedded Development
+# Local LLM and RAG Evaluation Harness for Embedded Engineering
 
-Local demo project exploring how to improve AI-assisted embedded software development by providing better hardware-grounded context.
+Local-first portfolio project for evaluating whether retrieval-augmented generation (RAG) makes local language models more accurate, grounded, and useful for embedded software engineering.
 
-One of the biggest problems with using general AI models in embedded work is that the model is often oblivious to the actual hardware constraints, vendor documentation, and exact implementation details. The goal of this project is to test methods such as local RAG pipelines and custom tool support, and to evaluate their impact in an engineering-oriented way.
+The project is growing from a document retrieval demo into an inspectable AI evaluation harness: a system that runs controlled model experiments, records the complete execution configuration, and separates retrieval failures from model and context-use failures.
 
-The current demo uses ESP32 documentation as the source corpus. The broader objective is improved practical use of AI models in embedded environments by measuring whether better retrieval and better data handling lead to better answers, fewer hallucinations, and more useful engineering output.
+The current corpus is ESP32 documentation. The planned benchmark will compare local models under three conditions: no retrieved context, context produced by the RAG pipeline, and known-good oracle context. This makes it possible to measure when RAG helps smaller models instead of merely demonstrating that a chatbot can search documents.
+
+> **Project status:** the local ingestion and retrieval foundation is implemented. Model execution, answer evaluation, and experiment tracking are the next major workstream. See [NEXT_STEPS.md](NEXT_STEPS.md) for the planned harness design.
 
 ## Why This Exists
 
-This repo is a lightweight experimentation platform for evaluating the impact of context-building methods in embedded development workflows.
+This repo is a lightweight experimentation platform for evaluating local LLMs and context-building methods in embedded development workflows.
 
 Questions this repo is trying to answer:
 - How should embedded reference material be ingested so it stays repeatable and inspectable?
 - How can ingestion reprocess only changed data instead of rebuilding everything?
 - How do chunking strategy, embedding model choice, and storage format affect retrieval quality?
-- How well do these choices scale as the documentation set grows?
-- What measurable impact do retrieval and tooling improvements have on embedded AI assistance?
+- Does retrieved hardware documentation improve answer correctness and reduce hallucinations?
+- Can a small local model with RAG outperform a larger model without domain context?
+- Did an unsuccessful answer fail because of retrieval, model capability, or poor context use?
+- How reproducibly can model, prompt, retrieval, latency, and scoring changes be compared?
+
+## Planned Harness
+
+The intended harness will keep the experimental layers explicit:
+
+- a versioned engineering question set with reference facts and relevant source locations
+- interchangeable local model adapters, beginning with an OpenAI-compatible Ollama endpoint
+- controlled no-context, retrieved-context, and oracle-context runs
+- retrieval metrics such as Recall@k and MRR
+- answer-level correctness, grounding, citation, refusal, and latency measurements
+- durable experiment records containing prompts, settings, retrieved chunks, outputs, and scores
+- optional LangChain/LangGraph and LlamaIndex adapters for framework comparison
+- containerized local workflows once the basic runner is stable
+
+LangChain, LangGraph, LlamaIndex, and eventually durable workflow orchestration are treated as technologies to evaluate or integrate where useful. The core benchmark remains framework-independent so that a framework change does not silently change the experiment itself.
 
 ## Current Demo
 
@@ -115,8 +134,11 @@ python search_index.py
 
 ## Roadmap
 
-- Make chunking, embedding, and storage settings easier to configure for controlled experiments
-- Define evaluation criteria for retrieval quality and downstream answer quality
-- Compare different retrieval and tooling approaches for embedded development tasks
-- Expand beyond PDFs into more realistic embedded-documentation sources
-- Measure which approaches materially improve AI usefulness in embedded environments
+- Define a structured, versioned embedded-engineering benchmark dataset
+- Add a reusable retriever interface around the current FAISS and SQLite implementation
+- Add local model execution through a narrow provider adapter
+- Compare no-context, retrieved-context, and oracle-context answers
+- Persist complete experiment configurations and results for reproducible comparisons
+- Add deterministic retrieval and answer scoring before introducing LLM-as-judge metrics
+- Compare selected LangChain/LangGraph and LlamaIndex integrations without hiding the custom retrieval pipeline
+- Containerize the repeatable local workflow and consider distributed orchestration only when experiments require it

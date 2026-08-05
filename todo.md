@@ -11,6 +11,44 @@ It should track:
 
 Agents should update this file when priorities become clearer, when work is completed, or when investigation changes the recommended next step.
 
+## Scope: Local LLM Evaluation Harness
+
+- [x] Reframe the planned direction from an external agent search tool to a local LLM and RAG evaluation harness.
+  Notes:
+  The existing ingestion and retrieval pipeline remains the foundation. The next phase will compare local model answers with no context, retrieved context, and manually verified oracle context.
+  Why:
+  This separates retrieval failures from model capability and context-use failures, while keeping the project useful as an inspectable embedded-engineering experiment.
+
+- [x] Record the new scope and initial implementation sequence.
+  Notes:
+  `README.md` now presents the public project direction and `NEXT_STEPS.md` records the proposed harness boundaries, milestones, framework learning plan, and experimental guardrails.
+
+- [ ] Define a structured, versioned benchmark-case format.
+  Recommendation:
+  Each case should include a stable id, question, required facts, forbidden claims, reference answer, and stable relevant source locations.
+  Important constraint:
+  Current chunks receive random UUIDs during ingestion, so those UUIDs should not be used as permanent ground-truth labels across force rebuilds.
+
+- [ ] Extract the current search path behind a small reusable retriever interface.
+  Why:
+  The experiment runner should consume retrieval results without depending on CLI rendering or hiding the existing FAISS-to-SQLite mapping.
+
+- [ ] Add a local model adapter and persist complete experiment runs.
+  Recommendation:
+  Begin with a narrow provider-independent interface backed by an OpenAI-compatible Ollama endpoint. Record model configuration, prompt version, retrieved context, output, timing, and failures.
+
+- [ ] Implement no-context, retrieved-context, and oracle-context experiment conditions.
+  Why:
+  Comparing all three is the central experiment for determining whether failures come from retrieval, model capability, or context utilization.
+
+- [ ] Add deterministic evaluation before LLM-as-judge scoring.
+  Recommendation:
+  Start with retrieval metrics such as Recall@k and MRR plus answer checks for required facts, unsupported claims, citations, and appropriate refusal.
+
+- [ ] Evaluate framework integrations after the plain runner is working.
+  Recommendation:
+  Add LangChain/LangGraph and LlamaIndex as narrow adapters or controlled comparison implementations. Consider Temporal only when long-running or distributed experiments create a concrete durable-execution requirement.
+
 ## Search Quality
 
 - [x] Move indexing away from paragraph-sized chunks.
