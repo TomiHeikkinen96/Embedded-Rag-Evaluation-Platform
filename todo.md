@@ -184,6 +184,12 @@ Agents should update this file when priorities become clearer, when work is comp
 
 ## Debuggability And Tooling
 
+- [x] Add a Docker-based local workflow for machines without Python.
+  Notes:
+  The repository now includes a Python 3.12 image, a `run_docker.bash` command wrapper, and Docker Compose support for ingestion, search, benchmarking, and database inspection. Source PDFs and generated storage remain visible on the host, while the Hugging Face model cache is persisted in a named Docker volume.
+  Why:
+  This makes setup repeatable on the current Apple Silicon/Colima environment without requiring a host Python installation.
+
 - [x] Create `AGENTS.md`.
   Notes:
   The repo now has an `AGENTS.md` file that describes the project intent, coding priorities, and how agents should use `todo.md`.

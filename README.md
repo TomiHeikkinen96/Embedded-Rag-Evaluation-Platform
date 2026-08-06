@@ -32,7 +32,7 @@ The intended harness will keep the experimental layers explicit:
 - answer-level correctness, grounding, citation, refusal, and latency measurements
 - durable experiment records containing prompts, settings, retrieved chunks, outputs, and scores
 - optional LangChain/LangGraph and LlamaIndex adapters for framework comparison
-- containerized local workflows once the basic runner is stable
+- containerized local workflows for ingestion, search, and inspection
 
 LangChain, LangGraph, LlamaIndex, and eventually durable workflow orchestration are treated as technologies to evaluate or integrate where useful. The core benchmark remains framework-independent so that a framework change does not silently change the experiment itself.
 
@@ -73,6 +73,44 @@ Current limitation:
 - larger corpora may still justify additional work such as embedding reuse across experimental rebuilds, richer index-version history, or more sophisticated update policies
 
 ## Install
+
+### Docker (recommended when Python is not installed)
+
+The Docker workflow only requires Docker and a running Colima instance. It uses
+Python 3.12 inside the image and keeps source PDFs and generated indexes in the
+host's `data/` and `storage/` directories. The downloaded embedding model is
+kept in a Docker volume so it does not need to be downloaded for every run.
+
+```bash
+colima start
+docker compose build
+```
+
+Place PDFs anywhere under `./data/`, then ingest them:
+
+```bash
+./run_docker.bash ingest.py
+```
+
+The first ingestion or search downloads the embedding model. To rebuild the
+index from scratch, or run searches and inspection tools:
+
+```bash
+./run_docker.bash ingest.py --force-rebuild
+./run_docker.bash search_index.py "maximum current" "ADC pins"
+./run_docker.bash db_inspect.py stats
+./run_docker.bash benchmark_search.py --file benchmark_queries.txt
+```
+
+The wrapper passes all arguments after the Python filename directly to the
+container. Use `./run_docker.bash search_index.py` with no query for interactive
+search. Stop Colima when you are finished if you do not want its VM running:
+
+```bash
+colima stop
+```
+
+### Native Python
 
 Tested with:
 
@@ -141,4 +179,4 @@ python search_index.py
 - Persist complete experiment configurations and results for reproducible comparisons
 - Add deterministic retrieval and answer scoring before introducing LLM-as-judge metrics
 - Compare selected LangChain/LangGraph and LlamaIndex integrations without hiding the custom retrieval pipeline
-- Containerize the repeatable local workflow and consider distributed orchestration only when experiments require it
+- Extend the containerized workflow as the evaluation harness grows, and consider distributed orchestration only when experiments require it

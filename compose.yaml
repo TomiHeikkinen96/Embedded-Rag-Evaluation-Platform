@@ -1,0 +1,15 @@
+services:
+  rag:
+    build:
+      context: .
+    environment:
+      HF_HOME: /cache/huggingface
+    volumes:
+      - ./data:/app/data
+      - ./storage:/app/storage
+      - huggingface-cache:/cache/huggingface
+    stdin_open: true
+    tty: true
+
+volumes:
+  huggingface-cache:
