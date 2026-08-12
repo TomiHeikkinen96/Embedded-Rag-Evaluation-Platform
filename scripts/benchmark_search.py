@@ -6,6 +6,7 @@ from pathlib import Path
 import faiss
 
 from processing.embedder import TextEmbedder
+from project_paths import BENCHMARK_QUERIES_PATH, PROJECT_ROOT
 from search_index import (
     EMBEDDING_MODEL_NAME,
     INDEX_PATH,
@@ -28,7 +29,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--file",
-        default="benchmark_queries.txt",
+        default=str(BENCHMARK_QUERIES_PATH),
         help="Path to a text file containing one query per line.",
     )
     parser.add_argument(
@@ -46,7 +47,7 @@ def load_queries(args: argparse.Namespace) -> list[str]:
 
     file_path = Path(args.file)
     if not file_path.is_absolute():
-        file_path = Path(__file__).resolve().parent / file_path
+        file_path = PROJECT_ROOT / file_path
 
     if not file_path.exists():
         raise SystemExit(

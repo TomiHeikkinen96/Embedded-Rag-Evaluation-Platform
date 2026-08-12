@@ -9,14 +9,15 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(SCRIPTS_DIR))
 
 from processing.embedder import TextEmbedder
+from project_paths import BENCHMARK_QUERIES_PATH, VISUALIZATION_DIR
 from search_index import EMBEDDING_MODEL_NAME, INDEX_PATH, METADATA_DB_PATH
 
 
-DEFAULT_QUERY_FILE = PROJECT_ROOT / "benchmark_queries.txt"
+DEFAULT_QUERY_FILE = BENCHMARK_QUERIES_PATH
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=PROJECT_ROOT / "visualization" / "embedding-data.json",
+        default=VISUALIZATION_DIR / "embedding-data.json",
         help="Destination JSON file used by visualization/index.html.",
     )
     return parser.parse_args()

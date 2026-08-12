@@ -18,6 +18,13 @@ except ImportError as exc:
 from chunkers.pdf_chunker import PDFChunker
 from processing.embedder import TextEmbedder
 from processing.pdf_loader import load_pdf_pages
+from project_paths import (
+    DATA_DIR,
+    FILE_TRACKING_DB_PATH,
+    INDEX_PATH,
+    METADATA_DB_PATH,
+    STORAGE_DIR,
+)
 from utils.db import (
     ACTIVE_INDEX_VERSION,
     clear_file_tracking_db,
@@ -42,12 +49,6 @@ from utils.db import (
 )
 from utils.hashing import sha256_file
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_DIR = PROJECT_ROOT / "data"
-STORAGE_DIR = PROJECT_ROOT / "storage"
-INDEX_PATH = STORAGE_DIR / "index.faiss"
-METADATA_DB_PATH = STORAGE_DIR / "metadata.sqlite"
-FILE_TRACKING_DB_PATH = STORAGE_DIR / "files_ingested.sqlite"
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
 CHUNKERS = {
@@ -60,7 +61,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--force-rebuild",
         action="store_true",
-        help="Clear FAISS and SQLite storage before ingesting.",
+        help="After confirmation, clear FAISS and SQLite storage before ingesting.",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Skip confirmation prompts. Intended for explicit automation.",
     )
     return parser.parse_args()
 
@@ -128,7 +134,12 @@ def detect_deleted_files(pdf_paths: list[Path]) -> list[Path]:
     return deleted_paths
 
 
-def confirm_run(change_count: int, total_count: int, deleted_count: int) -> None:
+def confirm_run(
+    change_count: int,
+    total_count: int,
+    deleted_count: int,
+    assume_yes: bool,
+) -> None:
     print(
         f"Found {change_count} ingestion changes "
         f"({deleted_count} deletions) across {total_count} current PDFs."
@@ -137,9 +148,24 @@ def confirm_run(change_count: int, total_count: int, deleted_count: int) -> None
         print("Nothing to do.")
         sys.exit(0)
 
+    if assume_yes:
+        return
+
     response = input("Proceed? (y/n) ").strip().lower()
     if response != "y":
         print("Ingestion cancelled.")
+        sys.exit(0)
+
+
+def confirm_force_rebuild(assume_yes: bool) -> None:
+    if assume_yes:
+        return
+
+    print("Clean rebuild requested.")
+    print("This deletes the current generated index and metadata, then rebuilds them from data/.")
+    response = input("Continue with clean rebuild? (y/n) ").strip().lower()
+    if response != "y":
+        print("Ingestion cancelled. Existing storage was not changed.")
         sys.exit(0)
 
 
@@ -326,6 +352,7 @@ def main() -> None:
     initialize_file_tracking_db(FILE_TRACKING_DB_PATH)
 
     if args.force_rebuild:
+        confirm_force_rebuild(args.yes)
         reset_storage()
 
     ensure_model_consistency(force_rebuild=args.force_rebuild)
@@ -333,7 +360,12 @@ def main() -> None:
     pdf_paths = discover_pdf_files()
     files_to_process, seen_files = detect_files_to_process(pdf_paths)
     deleted_paths = detect_deleted_files(pdf_paths)
-    confirm_run(len(files_to_process) + len(deleted_paths), len(pdf_paths), len(deleted_paths))
+    confirm_run(
+        len(files_to_process) + len(deleted_paths),
+        len(pdf_paths),
+        len(deleted_paths),
+        assume_yes=args.yes or args.force_rebuild,
+    )
     record_current_files_seen(seen_files)
 
     embedder = TextEmbedder(model_name=EMBEDDING_MODEL_NAME)

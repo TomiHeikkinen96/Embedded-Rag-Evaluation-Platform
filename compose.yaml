@@ -7,6 +7,9 @@ services:
     volumes:
       - ./data:/app/data
       - ./storage:/app/storage
+      - ./scripts:/app/scripts:ro
+      - ./benchmark_queries.txt:/app/benchmark_queries.txt:ro
+      - ./visualization:/app/visualization
       - huggingface-cache:/cache/huggingface
     stdin_open: true
     tty: true

@@ -7,3 +7,4 @@ venv/
 .env
 .codex
 visualization/embedding-data.json
+.DS_Store

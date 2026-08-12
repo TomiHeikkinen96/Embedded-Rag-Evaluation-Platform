@@ -7,11 +7,11 @@ from typing import Iterable
 
 import faiss
 
+from project_paths import INDEX_PATH, METADATA_DB_PATH
 from utils.db import initialize_metadata_db
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-DEFAULT_DB_PATH = PROJECT_ROOT / "storage" / "metadata.sqlite"
-DEFAULT_INDEX_PATH = PROJECT_ROOT / "storage" / "index.faiss"
+DEFAULT_DB_PATH = METADATA_DB_PATH
+DEFAULT_INDEX_PATH = INDEX_PATH
 
 
 def parse_args() -> argparse.Namespace:

@@ -3,8 +3,6 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from pathlib import Path
-
 import numpy as np
 try:
     import faiss
@@ -15,12 +13,9 @@ except ImportError as exc:
     ) from exc
 
 from processing.embedder import TextEmbedder
+from project_paths import INDEX_PATH, METADATA_DB_PATH
 from utils.db import fetch_chunks_by_vector_ids, initialize_metadata_db
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-STORAGE_DIR = PROJECT_ROOT / "storage"
-INDEX_PATH = STORAGE_DIR / "index.faiss"
-METADATA_DB_PATH = STORAGE_DIR / "metadata.sqlite"
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 TOP_K = 5
 CANDIDATE_POOL = 50

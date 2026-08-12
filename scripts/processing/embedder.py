@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Iterable
 
 import numpy as np
@@ -15,6 +14,8 @@ except ImportError as exc:
         "Embedding dependencies are missing. Install dependencies with "
         "`pip install -r requirements.txt`."
     ) from exc
+
+from project_paths import PROJECT_ROOT
 
 
 def _is_only_known_minilm_warning(loading_info: object) -> bool:
@@ -34,7 +35,7 @@ def _is_only_known_minilm_warning(loading_info: object) -> bool:
 
 class TextEmbedder:
     def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> None:
-        load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+        load_dotenv(PROJECT_ROOT / ".env")
         self.model_name = model_name
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 

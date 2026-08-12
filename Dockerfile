@@ -18,4 +18,4 @@ RUN python -m pip install --no-cache-dir --upgrade pip \
 
 COPY . .
 
-CMD ["python", "search_index.py"]
+CMD ["python", "scripts/search_index.py"]
