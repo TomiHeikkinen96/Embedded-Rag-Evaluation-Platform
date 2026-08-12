@@ -111,9 +111,9 @@ Compare labelled ranks; use cosine distributions and PCA to investigate them.
 
 ## Benchmark and ground truth
 
-`benchmark_queries.txt` is currently a repeatable query list, not ground truth.
-The first implementation milestone is a versioned benchmark such as
-`benchmarks/esp32-retrieval-v1.yaml`.
+`benchmark_queries.txt` is the legacy repeatable query list. The first labelled
+ground-truth seed now lives in `benchmarks/esp32-retrieval-v1/cases.json`, with
+the exact source corpus locked in `corpus.json`.
 
 Example shape:
 
@@ -131,7 +131,10 @@ Labels identify stable evidence, not random chunk ids. Chunk boundaries vary by
 strategy; the underlying source evidence does not. Benchmark validation should
 fail for human review if a document, page, or text anchor no longer resolves.
 
-The initial 20–30 cases should include:
+The seed converts seven sufficiently specific legacy queries into active cases
+and preserves `maximum current` as `needs_review`: the corpus contains several
+different maximum-current concepts, so assigning one relevant page would hide
+an annotation error. The initial 20–30 active cases should include:
 
 - exact identifiers and quoted terminology
 - paraphrases without literal word overlap
@@ -139,6 +142,11 @@ The initial 20–30 cases should include:
 - broad conceptual questions
 - ambiguous questions
 - questions not answered by the corpus
+
+Cases also declare `task_type`, `answerability`, and label status. Only `active`
+cases contribute to aggregate retrieval metrics. Ambiguous cases stay visible
+as `needs_review`; corpus-negative cases should be explicitly `unanswerable` so
+the evaluator can measure unsupported-answer/refusal behaviour separately.
 
 ## Metrics
 

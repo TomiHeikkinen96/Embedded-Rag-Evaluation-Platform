@@ -1,0 +1,105 @@
+{
+  "benchmark_id": "esp32-retrieval-v1",
+  "corpus_id": "esp32-local-corpus-2026-08-12",
+  "label_policy": {
+    "active": "Included in aggregate retrieval metrics.",
+    "needs_review": "Preserved for analysis but excluded from aggregate metrics until clarified.",
+    "unanswerable": "No sufficient evidence exists in this locked corpus; correct retrieval behavior is no supported answer."
+  },
+  "cases": [
+    {
+      "id": "maximum-current-needs-intent",
+      "legacy_query": "maximum current",
+      "question": "Which maximum current is being asked for?",
+      "status": "needs_review",
+      "task_type": "ambiguous",
+      "answerability": "ambiguous",
+      "review_note": "The corpus gives different values for cumulative GPIO output, supply sizing, internal LDO output, per-pin source/sink current, and RF mode consumption. Split this into specific questions before scoring it."
+    },
+    {
+      "id": "adc-capable-pins",
+      "legacy_query": "ADC pins",
+      "question": "Which ESP32 pins are connected to ADC1 and ADC2 channels?",
+      "status": "active",
+      "task_type": "fact_lookup",
+      "answerability": "answerable",
+      "expected_answer_note": "The pin overview maps ADC1 and ADC2 channels to GPIO pins; evidence spans two adjacent table pages.",
+      "evidence": [
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 14, "section": "2.2 Pin Overview, Table 2-1", "text_anchor": "GPIO36, ADC1_CH0, RTC_GPIO0"},
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 15, "section": "2.2 Pin Overview, Table 2-1 continued", "text_anchor": "GPIO2, ADC2_CH2, RTC_GPIO12"}
+      ]
+    },
+    {
+      "id": "wifi-active-current",
+      "legacy_query": "wifi current",
+      "question": "What current does the ESP32 typically consume in the listed Wi-Fi transmit and receive modes?",
+      "status": "active",
+      "task_type": "table_lookup",
+      "answerability": "answerable",
+      "expected_answer_note": "Values depend on RF mode: the table lists 240 mA, 190 mA, and 180 mA for the specified transmit modes and 95-100 mA for receive.",
+      "evidence": [
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 52, "section": "5.4 RF Current Consumption in Active Mode, Table 5-4", "text_anchor": "Current Consumption Depending on RF Modes"}
+      ]
+    },
+    {
+      "id": "absolute-maximum-ratings",
+      "legacy_query": "absolute maximum ratings",
+      "question": "What absolute maximum ratings does the ESP32 datasheet specify?",
+      "status": "active",
+      "task_type": "table_lookup",
+      "answerability": "answerable",
+      "expected_answer_note": "Table 5-1 lists allowed input voltage, cumulative I/O output current, and storage temperature. These are stress ratings, not recommended operating conditions.",
+      "evidence": [
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 51, "section": "5.1 Absolute Maximum Ratings, Table 5-1", "text_anchor": "Cumulative IO output current"}
+      ]
+    },
+    {
+      "id": "flash-voltage-regulator",
+      "legacy_query": "flash voltage regulator",
+      "question": "What voltage and maximum output current can the ESP32 built-in flash voltage regulator supply?",
+      "status": "active",
+      "task_type": "fact_lookup",
+      "answerability": "answerable",
+      "expected_answer_note": "It can supply 3.3 V or 1.8 V with a maximum output current of 40 mA.",
+      "evidence": [
+        {"document_id": "esp32-trm-v5.8", "pdf_page": 183, "section": "9.3.4 Flash Voltage Regulator", "text_anchor": "maximum output current of 40 mA"}
+      ]
+    },
+    {
+      "id": "gpio-matrix-purpose",
+      "legacy_query": "gpio matrix",
+      "question": "What does the ESP32 GPIO matrix do?",
+      "status": "active",
+      "task_type": "conceptual",
+      "answerability": "answerable",
+      "expected_answer_note": "The GPIO matrix, IOMUX, and RTC IOMUX route peripheral signals to and from GPIO pins, providing configurable I/O.",
+      "evidence": [
+        {"document_id": "esp32-trm-v5.8", "pdf_page": 115, "section": "6.1 Overview", "text_anchor": "responsible for routing signals from the peripherals to GPIO pins"}
+      ]
+    },
+    {
+      "id": "deep-sleep-current",
+      "legacy_query": "deep sleep current",
+      "question": "What deep-sleep power consumption does the ESP32 Series Datasheet state?",
+      "status": "active",
+      "task_type": "fact_lookup",
+      "answerability": "answerable",
+      "expected_answer_note": "The Features section states 10 microamps; a future benchmark may add operating-condition-specific evidence if needed.",
+      "evidence": [
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 5, "section": "Features - Power Management", "text_anchor": "Power consumption in Deep-sleep mode is 10"}
+      ]
+    },
+    {
+      "id": "internal-pull-up-resistance",
+      "legacy_query": "pull-up resistor",
+      "question": "What is the typical resistance of an ESP32 internal pull-up resistor?",
+      "status": "active",
+      "task_type": "table_lookup",
+      "answerability": "answerable",
+      "expected_answer_note": "Table 5-3 gives a typical value of 45 kilohms. GPIO34-GPIO39 do not have internal pull-up or pull-down circuitry.",
+      "evidence": [
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 52, "section": "5.3 DC Characteristics, Table 5-3", "text_anchor": "Resistance of internal pull-up resistor"}
+      ]
+    }
+  ]
+}

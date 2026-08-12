@@ -11,6 +11,9 @@
     main { margin: 0 auto; max-width: 1180px; padding: 26px 24px 36px; }
     h1 { font-size: clamp(22px, 3vw, 34px); letter-spacing: -0.03em; margin: 0 0 5px; }
     .subtitle { color: light-dark(#586174, #aeb7c6); margin: 0 0 20px; }
+    .view-switcher { display: flex; gap: 8px; margin: 22px 0 8px; }
+    .view-switcher button { border-radius: 10px; font-size: 14px; font-weight: 750; padding: 9px 14px; }
+    .view-panel[hidden] { display: none; }
     .control-label { color: light-dark(#586174, #aeb7c6); font-size: 12px; font-weight: 700; letter-spacing: .08em; margin: 18px 0 7px; text-transform: uppercase; }
     .model-strip, .query-strip { display: flex; flex-wrap: wrap; gap: 7px; }
     .query-strip { margin-bottom: 14px; }
@@ -24,6 +27,28 @@
     #embedding-plot { height: min(68vh, 680px); min-height: 440px; width: 100%; }
     .selected { border-top: 1px solid light-dark(#dce1e9, #343b48); line-height: 1.45; min-height: 22px; padding-top: 12px; }
     .note { color: light-dark(#586174, #aeb7c6); font-size: 13px; margin: 16px 0 0; }
+    .gold-summary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); margin: 18px 0; }
+    .metric-card { background: light-dark(#fff, #1c2028); border: 1px solid light-dark(#dce1e9, #343b48); border-radius: 12px; padding: 14px; }
+    .metric-card span { color: light-dark(#586174, #aeb7c6); display: block; font-size: 12px; margin-bottom: 5px; }
+    .metric-card strong { font-size: 24px; }
+    .case-list { display: grid; gap: 10px; margin-top: 16px; }
+    details { background: light-dark(#fff, #1c2028); border: 1px solid light-dark(#dce1e9, #343b48); border-radius: 12px; overflow: hidden; }
+    summary { cursor: pointer; display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) auto; padding: 14px 16px; }
+    summary::marker { color: #7557ff; }
+    .case-question { font-weight: 700; }
+    .case-meta, .gold-definition { color: light-dark(#586174, #aeb7c6); font-size: 13px; }
+    .rank { font-variant-numeric: tabular-nums; font-weight: 750; white-space: nowrap; }
+    .case-body { border-top: 1px solid light-dark(#dce1e9, #343b48); padding: 14px 16px; }
+    .expected { margin: 0 0 12px; }
+    .result { border-left: 3px solid light-dark(#c8ced9, #465061); margin: 9px 0; padding: 4px 0 4px 11px; }
+    .result[data-label="evidence"] { border-color: #2ca66f; }
+    .result[data-label="source_page"] { border-color: #d39728; }
+    .result-head { font-size: 13px; font-weight: 750; margin-bottom: 3px; }
+    .result-text { color: light-dark(#586174, #aeb7c6); font-size: 13px; line-height: 1.4; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 10px 0; }
+    .legend span { font-size: 13px; }
+    .legend i { border-radius: 50%; display: inline-block; height: 9px; margin-right: 5px; width: 9px; }
+    .legend .hit { background: #2ca66f; } .legend .near { background: #d39728; } .legend .miss { background: light-dark(#c8ced9, #465061); }
     .error { background: #842029; border-radius: 8px; color: white; padding: 14px; }
   </style>
 </head>
@@ -31,20 +56,31 @@
   <main>
     <h1>ESP32 embedding & retrieval lab</h1>
     <p class="subtitle">Rotate, zoom, select a benchmark query, and inspect its nearest chunks.</p>
-    <div class="control-label">Embedding model</div>
-    <div class="model-strip" aria-label="Embedding model"></div>
-    <div class="control-label">Evaluation question</div>
-    <div class="query-strip" aria-label="Benchmark query"></div>
-    <div class="metrics" aria-live="polite">
-      <span><strong class="query-name"></strong></span>
-      <span>Dimensions <strong class="dimensions"></strong></span>
-      <span>PCA variance <strong class="variance"></strong></span>
-      <span>Top cosine <strong class="top-score"></strong></span>
-      <span>Top-1 vs top-10 separation <strong class="separation"></strong></span>
-    </div>
-    <div id="embedding-plot" role="img" aria-label="Rotatable three-dimensional PCA projection of chunk and query embeddings"></div>
-    <div class="selected" aria-live="polite"></div>
-    <p class="note">PCA is a three-dimensional explanation of the space. Retrieval scores are calculated from the original embedding vectors.</p>
+    <nav class="view-switcher" aria-label="Evaluation view"></nav>
+    <section id="embedding-view" class="view-panel">
+      <div class="control-label">Embedding model</div>
+      <div class="model-strip" aria-label="Embedding model"></div>
+      <div class="control-label">Evaluation question</div>
+      <div class="query-strip" aria-label="Benchmark query"></div>
+      <div class="metrics" aria-live="polite">
+        <span><strong class="query-name"></strong></span>
+        <span>Dimensions <strong class="dimensions"></strong></span>
+        <span>PCA variance <strong class="variance"></strong></span>
+        <span>Top cosine <strong class="top-score"></strong></span>
+        <span>Top-1 vs top-10 separation <strong class="separation"></strong></span>
+      </div>
+      <div id="embedding-plot" role="img" aria-label="Rotatable three-dimensional PCA projection of chunk and query embeddings"></div>
+      <div class="selected" aria-live="polite"></div>
+      <p class="note">PCA is a three-dimensional explanation of the space. Retrieval scores are calculated from the original embedding vectors.</p>
+    </section>
+    <section id="golden-view" class="view-panel" hidden>
+      <div class="control-label">Embedding model</div>
+      <div class="model-strip golden-model-strip" aria-label="Golden evaluation model"></div>
+      <div class="gold-summary" aria-live="polite"></div>
+      <p class="gold-definition"></p>
+      <div class="legend" aria-label="Result labels"><span><i class="hit"></i>gold evidence</span><span><i class="near"></i>correct page, wrong passage</span><span><i class="miss"></i>other source</span></div>
+      <div class="case-list"></div>
+    </section>
   </main>
   <script>
     const plot = document.getElementById('embedding-plot');
@@ -54,6 +90,31 @@
     let payload;
     let selectedModel = 0;
     let selectedQuery = 0;
+    let goldenPayload;
+    let selectedGoldenModel = 0;
+
+    const views = [
+      { id: 'embedding-view', label: 'Embedding explorer' },
+      { id: 'golden-view', label: 'Golden comparison' }
+    ];
+
+    function setupViews() {
+      const navigation = document.querySelector('.view-switcher');
+      views.forEach((view, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = view.label;
+        button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+        button.addEventListener('click', () => {
+          views.forEach((item, itemIndex) => {
+            document.getElementById(item.id).hidden = item.id !== view.id;
+            navigation.children[itemIndex].setAttribute('aria-pressed', item.id === view.id ? 'true' : 'false');
+          });
+          if (view.id === 'embedding-view' && payload) Plotly.Plots.resize(plot);
+        });
+        navigation.appendChild(button);
+      });
+    }
 
     function activeModel() {
       return payload.models[selectedModel];
@@ -127,6 +188,68 @@
       selectedText.textContent = `Top hit · page ${ranked[0].page} · ${ranked[0].text}`;
     }
 
+    function percent(value) {
+      return `${(value * 100).toFixed(1)}%`;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      })[character]);
+    }
+
+    function renderGoldenModel() {
+      const model = goldenPayload.models[selectedGoldenModel];
+      const summary = document.querySelector('.gold-summary');
+      const list = document.querySelector('.case-list');
+      if (!model.available) {
+        summary.innerHTML = `<p class="error">${escapeHtml(model.reason)}</p>`;
+        list.innerHTML = '';
+        return;
+      }
+      const metrics = model.metrics;
+      summary.innerHTML = [
+        ['MRR', metrics.mrr.toFixed(3)],
+        ['Recall@1', percent(metrics.recall_at_1)],
+        ['Recall@3', percent(metrics.recall_at_3)],
+        ['Recall@5', percent(metrics.recall_at_5)],
+        ['Recall@10', percent(metrics.recall_at_10)]
+      ].map(([label, value]) => `<div class="metric-card"><span>${label}</span><strong>${value}</strong></div>`).join('');
+      list.innerHTML = model.cases.map(item => {
+        const rankText = item.first_evidence_rank ? `Gold at rank ${item.first_evidence_rank}` : `No gold hit in top ${goldenPayload.evaluation_depth}`;
+        const results = item.results.map(result => `
+          <div class="result" data-label="${result.label}">
+            <div class="result-head">#${result.rank} · ${escapeHtml(result.label.replace('_', ' '))} · ${escapeHtml(result.source_path)} · PDF page ${result.page} · score ${result.rerank_score.toFixed(3)}</div>
+            <div class="result-text">${escapeHtml(result.chunk)}</div>
+          </div>`).join('');
+        return `<details>
+          <summary><span><span class="case-question">${escapeHtml(item.question)}</span><br><span class="case-meta">${escapeHtml(item.task_type)}</span></span><span class="rank">${escapeHtml(rankText)}</span></summary>
+          <div class="case-body"><p class="expected"><strong>Expected:</strong> ${escapeHtml(item.expected_answer_note)}</p>${results}</div>
+        </details>`;
+      }).join('');
+    }
+
+    function setupGolden(data) {
+      goldenPayload = data;
+      document.querySelector('.gold-definition').textContent = `${data.benchmark_id} · ${data.label_definition}`;
+      const goldenStrip = document.querySelector('.golden-model-strip');
+      data.models.forEach((model, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.innerHTML = `${escapeHtml(model.display_name)}<small>${model.available ? `${model.metrics.case_count} labelled cases` : 'index unavailable'}</small>`;
+        button.setAttribute('aria-pressed', index === selectedGoldenModel ? 'true' : 'false');
+        button.addEventListener('click', () => {
+          selectedGoldenModel = index;
+          [...goldenStrip.children].forEach((item, itemIndex) => item.setAttribute('aria-pressed', itemIndex === index ? 'true' : 'false'));
+          renderGoldenModel();
+        });
+        goldenStrip.appendChild(button);
+      });
+      renderGoldenModel();
+    }
+
+    setupViews();
+
     fetch('./embedding-data.json')
       .then(response => {
         if (!response.ok) throw new Error('Generate embedding-data.json before opening this page.');
@@ -171,6 +294,16 @@
       })
       .catch(error => {
         plot.innerHTML = `<p class="error">${error.message}</p>`;
+      });
+
+    fetch('./golden-evaluation.json')
+      .then(response => {
+        if (!response.ok) throw new Error('Generate golden-evaluation.json before opening this view.');
+        return response.json();
+      })
+      .then(setupGolden)
+      .catch(error => {
+        document.querySelector('.gold-summary').innerHTML = `<p class="error">${error.message}</p>`;
       });
   </script>
 </body>

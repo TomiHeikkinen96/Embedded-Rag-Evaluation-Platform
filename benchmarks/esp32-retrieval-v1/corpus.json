@@ -1,0 +1,37 @@
+{
+  "corpus_id": "esp32-local-corpus-2026-08-12",
+  "inventoried_at": "2026-08-12",
+  "collection_page": "https://docs.espressif.com/projects/esp-idf/en/v4.3/esp32/hw-reference/index.html",
+  "documents": [
+    {
+      "document_id": "esp32-datasheet-v5.3",
+      "path": "data/esp32_datasheet_en.pdf",
+      "title": "ESP32 Series Datasheet",
+      "document_version": "5.3",
+      "release_date": "2026.07",
+      "pdf_pages": 78,
+      "sha256": "a7917e6b47528c9dcab06837a49d452e582751335797db879f1cf2d17cd29adf",
+      "source_url": "https://www.espressif.com/documentation/esp32_datasheet_en.pdf"
+    },
+    {
+      "document_id": "esp32-trm-v5.8",
+      "path": "data/esp32_technical_reference_manual_en.pdf",
+      "title": "ESP32 Technical Reference Manual",
+      "document_version": "5.8",
+      "release_date": null,
+      "pdf_pages": 784,
+      "sha256": "4ba58e9fa0405ec2bf80b912a29b483f6edc8c4b2b1058201913a2fe37e582f0",
+      "source_url": "https://www.espressif.com/documentation/esp32_technical_reference_manual_en.pdf"
+    },
+    {
+      "document_id": "esp32-soc-errata-v3.0",
+      "path": "data/esp-chip-errata-en-master-esp32.pdf",
+      "title": "ESP32 Series SoC Errata",
+      "document_version": "3.0",
+      "release_date": "2025-10-11",
+      "pdf_pages": 36,
+      "sha256": "10dadd5993b69c01ed80aa5a1403450bb0487a56b963ff5243137c812f3ebaf1",
+      "source_url": "https://docs.espressif.com/projects/esp-chip-errata/en/latest/esp32/esp-chip-errata-en-master-esp32.pdf"
+    }
+  ]
+}

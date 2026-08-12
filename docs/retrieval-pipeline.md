@@ -149,6 +149,20 @@ Batch benchmarking:
 ./run_script.sh benchmark_search.py --model bge
 ```
 
+Golden benchmark comparison:
+
+```bash
+./run_script.sh validate_benchmark.py
+./run_script.sh visualization/generate_golden_evaluation.py
+./view_evaluation.sh
+```
+
+The evaluation viewer has separate top-level views for the PCA embedding
+explorer and labelled golden comparison. A golden hit requires the expected
+document, physical PDF page, and text anchor in the retrieved chunk or its
+display paragraph. A correct-document/page result without the anchor is shown
+as a near miss rather than counted as relevant.
+
 Database inspection:
 
 ```bash

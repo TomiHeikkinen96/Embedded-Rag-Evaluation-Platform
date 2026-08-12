@@ -107,6 +107,7 @@ def search_query(
     index: faiss.Index,
     embedder: TextEmbedder,
     index_id: str,
+    top_k: int = TOP_K,
 ) -> list[dict]:
     query_embedding = embedder.embed_texts([query], input_type="query")
 
@@ -146,7 +147,7 @@ def search_query(
         )
 
     ranked_results.sort(key=lambda item: item["rerank_score"], reverse=True)
-    return ranked_results[:TOP_K]
+    return ranked_results[:top_k]
 
 
 def print_results(query: str, ranked_results: list[dict]) -> None:

@@ -8,3 +8,5 @@ venv/
 .codex
 visualization/embedding-data.json
 .DS_Store
+visualization/golden-evaluation.json
+

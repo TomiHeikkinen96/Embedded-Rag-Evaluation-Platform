@@ -5,14 +5,14 @@ detail belongs in `docs/`; completed history remains available in Git.
 
 ## Current milestone — labelled retrieval baseline
 
-- [ ] Define `benchmarks/esp32-retrieval-v1` with stable case ids, questions,
-  topics, and source-evidence labels.
+- [x] Define `benchmarks/esp32-retrieval-v1` with a hash-locked corpus manifest,
+  stable case ids, questions, answerability labels, and source evidence.
 - [ ] Label an initial varied set of 20–30 cases, including exact identifiers,
   paraphrases, table values, broad questions, ambiguous questions, and absent answers.
-- [ ] Add benchmark validation that fails when a document/page/text anchor no
-  longer resolves.
-- [ ] Calculate reciprocal rank, MRR, and Recall@1/3/5/10 for the current
-  custom-chunker/MiniLM baseline.
+- [x] Add benchmark validation that fails when a corpus hash, document page, or
+  text anchor no longer resolves.
+- [x] Calculate reciprocal rank, MRR, and Recall@1/3/5/10 for available current
+  custom-chunker embedding indexes and expose per-case ranked evidence.
 - [ ] Persist the baseline configuration, ranked results, timing, and metrics.
 
 ## Next — configurable retrieval matrix
@@ -33,8 +33,8 @@ detail belongs in `docs/`; completed history remains available in Git.
 - [ ] Fit PCA on corpus vectors and transform queries through fixed axes.
 - [x] Report explained variance for the displayed components.
 - [ ] Add chunker and retrieval-method controls. Model selection is implemented.
-- [ ] Add per-question reciprocal rank, aggregate MRR/Recall@k, latency, chunk
-  count, and index-size views.
+- [ ] Add latency, chunk count, and index-size views. Per-question reciprocal
+  rank and aggregate MRR/Recall@k are implemented in the golden comparison.
 - [ ] Add expected-evidence versus retrieved-result failure inspection.
 
 ## Environment and performance
@@ -76,3 +76,19 @@ detail belongs in `docs/`; completed history remains available in Git.
 - The model indexes are comparable, but retrieval accuracy is not yet labelled or scored.
 - Weak semantic matches can survive in lower ranks.
 - PCA is explanatory and cannot establish retrieval correctness.
+
+## Evaluation log
+
+- 2026-08-12: Inventoried the three PDFs under `data/`. Although they were
+  reached from the ESP-IDF v4.3 Hardware Reference page, the rolling downloads
+  are Datasheet v5.3, TRM v5.8, and SoC Errata v3.0—not a v4.3 snapshot.
+- 2026-08-12: Converted the eight legacy search fragments into seven active
+  human-verifiable cases and one `needs_review` case. `maximum current` is not
+  scoreable without specifying the current domain and operating condition.
+- 2026-08-12: Added a modular top-level evaluation view switcher and golden
+  comparison. Strict hits require document, physical PDF page, and text anchor;
+  correct-page/wrong-passage results remain visible as near misses.
+- 2026-08-12: Native MPS ingestion completed MiniLM and BGE over 14,353 chunks,
+  then Jina's remote custom model code caused a process-level segmentation fault
+  during model initialization. Replaced it with standard-BERT Arctic Embed M
+  v1.5 so the three-model baseline remains repeatable on Apple Silicon.
