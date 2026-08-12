@@ -7,7 +7,7 @@ detail belongs in `docs/`; completed history remains available in Git.
 
 - [x] Define `benchmarks/esp32-retrieval-v1` with a hash-locked corpus manifest,
   stable case ids, questions, answerability labels, and source evidence.
-- [ ] Label an initial varied set of 20–30 cases, including exact identifiers,
+- [x] Label an initial varied set of 20–30 cases, including exact identifiers,
   paraphrases, table values, broad questions, ambiguous questions, and absent answers.
 - [x] Add benchmark validation that fails when a corpus hash, document page, or
   text anchor no longer resolves.
@@ -72,8 +72,11 @@ detail belongs in `docs/`; completed history remains available in Git.
 ## Current known limitations
 
 - PDF tables remain the noisiest source format.
-- The current query file is repeatable but not yet labelled ground truth.
-- The model indexes are comparable, but retrieval accuracy is not yet labelled or scored.
+- `benchmark_queries.txt` remains an unlabelled legacy query list; labelled
+  ground truth lives in `benchmarks/esp32-retrieval-v1`.
+- Ambiguous and unanswerable controls are recorded but not yet scored.
+- Multi-evidence questions currently receive first-relevant-evidence ranking;
+  evidence-set completeness is not yet a separate metric.
 - Weak semantic matches can survive in lower ranks.
 - PCA is explanatory and cannot establish retrieval correctness.
 
@@ -88,6 +91,14 @@ detail belongs in `docs/`; completed history remains available in Git.
 - 2026-08-12: Added a modular top-level evaluation view switcher and golden
   comparison. Strict hits require document, physical PDF page, and text anchor;
   correct-page/wrong-passage results remain visible as near misses.
+- 2026-08-12: Expanded retrieval v1 to 28 cases: 25 active positives across all
+  three PDFs, one ambiguous control, and two corpus-negative controls. New
+  labels cover exact identifiers, paraphrases, multi-fact questions, tables,
+  conceptual explanations, and hardware errata diagnosis.
+- 2026-08-12: Added PIC24FJ, STM32F446, and ATmega328P datasheets as deliberate
+  wrong-device distractors. The corpus now has 30,959 chunks: 14,353 ESP32
+  target chunks and 16,606 distractor chunks. ESP32 golden labels remain the
+  correct scope; separate labels would be needed only for a multi-device task.
 - 2026-08-12: Native MPS ingestion completed MiniLM and BGE over 14,353 chunks,
   then Jina's remote custom model code caused a process-level segmentation fault
   during model initialization. Replaced it with standard-BERT Arctic Embed M

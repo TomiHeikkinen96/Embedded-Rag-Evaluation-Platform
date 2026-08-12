@@ -1,6 +1,6 @@
 {
   "benchmark_id": "esp32-retrieval-v1",
-  "corpus_id": "esp32-local-corpus-2026-08-12",
+  "corpus_id": "mixed-mcu-corpus-2026-08-12",
   "label_policy": {
     "active": "Included in aggregate retrieval metrics.",
     "needs_review": "Preserved for analysis but excluded from aggregate metrics until clarified.",
@@ -100,6 +100,161 @@
       "evidence": [
         {"document_id": "esp32-datasheet-v5.3", "pdf_page": 52, "section": "5.3 DC Characteristics, Table 5-3", "text_anchor": "Resistance of internal pull-up resistor"}
       ]
+    },
+    {
+      "id": "cpu-architecture-and-frequency",
+      "question": "What processor architecture does the ESP32 use, and what is its maximum CPU clock frequency?",
+      "status": "active", "task_type": "multi_fact", "answerability": "answerable",
+      "expected_answer_note": "The ESP32 contains one or two Xtensa 32-bit LX6 processors and supports up to 240 MHz, except the ESP32-S0WD variant listed at 160 MHz.",
+      "evidence": [
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 26, "section": "4.1.1 CPU", "text_anchor": "one or two low-power Xtensa"},
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 26, "section": "4.1.1 CPU", "text_anchor": "clock frequency of up to 240 MHz"}
+      ]
+    },
+    {
+      "id": "rtc-fast-slow-memory-roles",
+      "question": "How do RTC FAST Memory and RTC SLOW Memory differ in their intended use?",
+      "status": "active", "task_type": "paraphrase", "answerability": "answerable",
+      "expected_answer_note": "The main CPU can use RTC FAST Memory during RTC boot from deep sleep, while the ULP coprocessor can access RTC SLOW Memory during deep sleep; each is 8 KB.",
+      "evidence": [
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 26, "section": "4.1.2 Internal Memory", "text_anchor": "RTC FAST Memory"},
+        {"document_id": "esp32-datasheet-v5.3", "pdf_page": 26, "section": "4.1.2 Internal Memory", "text_anchor": "RTC SLOW Memory"}
+      ]
+    },
+    {
+      "id": "strapping-pin-default-levels",
+      "question": "What are the ESP32 strapping pins and their default pull configuration and bit values?",
+      "status": "active", "task_type": "table_lookup", "answerability": "answerable",
+      "expected_answer_note": "Table 3-1 lists GPIO0 pull-up/1, GPIO2 pull-down/0, MTDI pull-down/0, MTDO pull-up/1, and GPIO5 pull-up/1.",
+      "evidence": [{"document_id": "esp32-datasheet-v5.3", "pdf_page": 22, "section": "3 Boot Configurations, Table 3-1", "text_anchor": "Default Configuration of Strapping Pins"}]
+    },
+    {
+      "id": "single-supply-recommendation",
+      "question": "For a single-supply ESP32 design, what supply voltage and output-current capability are recommended?",
+      "status": "active", "task_type": "paraphrase", "answerability": "answerable",
+      "expected_answer_note": "The datasheet recommends 3.3 V and a supply capable of 500 mA or more.",
+      "evidence": [{"document_id": "esp32-datasheet-v5.3", "pdf_page": 19, "section": "2.5.3 Chip Power-up and Reset - Notes on power supply", "text_anchor": "recommended output current is 500 mA or more"}]
+    },
+    {
+      "id": "power-mode-consumption-comparison",
+      "question": "How much current is listed for light sleep, deep sleep with RTC timer and memory, hibernation, and power-off modes?",
+      "status": "active", "task_type": "table_lookup", "answerability": "answerable",
+      "expected_answer_note": "Table 4-2 lists 0.8 mA for light sleep, 10 microamps for deep sleep with RTC timer and memory, 5 microamps for hibernation, and 1 microamp for power off.",
+      "evidence": [{"document_id": "esp32-datasheet-v5.3", "pdf_page": 30, "section": "4.3.1 Power Management Unit, Table 4-2", "text_anchor": "Power Consumption by Power Modes"}]
+    },
+    {
+      "id": "input-only-gpio-limitations",
+      "question": "Which ESP32 GPIO pins are input-only, and what output or pull-resistor features do they lack?",
+      "status": "active", "task_type": "fact_lookup", "answerability": "answerable",
+      "expected_answer_note": "GPIO34 through GPIO39 are input-only and have neither an output driver nor internal pull-up/pull-down circuitry.",
+      "evidence": [{"document_id": "esp32-datasheet-v5.3", "pdf_page": 61, "section": "Appendix A.1 Notes on ESP32 Pin Lists, Table 6-1", "text_anchor": "GPIO pins 34-39 are input-only"}]
+    },
+    {
+      "id": "touch-sensor-pin-touch9",
+      "question": "Which pin carries the TOUCH9 capacitive-touch signal?",
+      "status": "active", "task_type": "table_lookup", "answerability": "answerable",
+      "expected_answer_note": "Table 4-6 maps TOUCH9 to 32K_XP, which is GPIO32 elsewhere in the pin overview.",
+      "evidence": [{"document_id": "esp32-datasheet-v5.3", "pdf_page": 46, "section": "4.10 Peripheral Pin Configurations, Table 4-6", "text_anchor": "TOUCH9 32K_XP"}]
+    },
+    {
+      "id": "bluetooth-basic-rate-sensitivity",
+      "question": "What minimum, typical, and maximum Bluetooth Basic Rate receiver sensitivity is specified at 0.1% BER?",
+      "status": "active", "task_type": "table_lookup", "answerability": "answerable",
+      "expected_answer_note": "The receiver table specifies -90 dBm minimum, -89 dBm typical, and -88 dBm maximum sensitivity at 0.1% BER.",
+      "evidence": [{"document_id": "esp32-datasheet-v5.3", "pdf_page": 54, "section": "5.7.1 Receiver - Basic Data Rate, Table 5-7", "text_anchor": "Sensitivity @0.1% BER"}]
+    },
+    {
+      "id": "ulp-clock-and-registers",
+      "question": "Which clock drives the ULP coprocessor, and how many general-purpose registers does it have?",
+      "status": "active", "task_type": "multi_fact", "answerability": "answerable",
+      "expected_answer_note": "The ULP uses the 8 MHz RTC_FAST_CLK and has four 16-bit general-purpose registers, R0 through R3.",
+      "evidence": [
+        {"document_id": "esp32-trm-v5.8", "pdf_page": 29, "section": "1.2 Features", "text_anchor": "Uses RTC_FAST_CLK, which is 8 MHz"},
+        {"document_id": "esp32-trm-v5.8", "pdf_page": 29, "section": "1.2 Features", "text_anchor": "four 16-bit general-purpose registers"}
+      ]
+    },
+    {
+      "id": "efuse-coding-scheme-widths",
+      "question": "For each coding_scheme value, what usable width and coding method do eFuse BLOCK1, BLOCK2, and BLOCK3 use?",
+      "status": "active", "task_type": "exact_identifier", "answerability": "answerable",
+      "expected_answer_note": "Table 5.3-2 maps 00/11 to 256-bit None, 01 to 192-bit 3/4, and 10 to 128-bit Repeat, all stored in 256 eFuse bits.",
+      "evidence": [{"document_id": "esp32-trm-v5.8", "pdf_page": 94, "section": "5.3.1.3 System Parameter coding_scheme, Table 5.3-2", "text_anchor": "BLOCK1/2/3 Encoding"}]
+    },
+    {
+      "id": "gpio-matrix-output-registers",
+      "question": "Which register fields route peripheral output signal Y to GPIO pin X through the GPIO matrix?",
+      "status": "active", "task_type": "exact_identifier", "answerability": "answerable",
+      "expected_answer_note": "GPIO_FUNCx_OUT_SEL selects signal Y, GPIO_FUNCx_OEN_SEL participates in output enable selection, and GPIO_ENABLE_DATA[x] controls the pin output driver.",
+      "evidence": [{"document_id": "esp32-trm-v5.8", "pdf_page": 119, "section": "6.3.2 Functional Description", "text_anchor": "Set the GPIO_FUNCx_OUT_SEL field"}]
+    },
+    {
+      "id": "flash-encryption-read-path",
+      "question": "How does ESP32 protect code stored in off-chip flash while still allowing the CPU to execute it?",
+      "status": "active", "task_type": "conceptual", "answerability": "answerable",
+      "expected_answer_note": "The flash encryption block writes encrypted code to off-chip flash, and the flash decryption block automatically decrypts instructions and data when the CPU reads through cache.",
+      "evidence": [{"document_id": "esp32-trm-v5.8", "pdf_page": 303, "section": "17.1 Overview", "text_anchor": "automatically decrypt instructions and data"}]
+    },
+    {
+      "id": "uart-controller-count-and-shared-ram",
+      "question": "How many UART controllers does ESP32 provide, and how much RAM do their transmit and receive FIFOs share?",
+      "status": "active", "task_type": "multi_fact", "answerability": "answerable",
+      "expected_answer_note": "ESP32 has three UART controllers, UART0 through UART2, sharing 1024 x 8-bit RAM among their transmit and receive FIFOs.",
+      "evidence": [
+        {"document_id": "esp32-trm-v5.8", "pdf_page": 311, "section": "19.1 Overview", "text_anchor": "three UART controllers available"},
+        {"document_id": "esp32-trm-v5.8", "pdf_page": 311, "section": "19.2 UART Features", "text_anchor": "RAM shared by three UART transmit-FIFOs"}
+      ]
+    },
+    {
+      "id": "ethernet-mac-speeds-and-phy",
+      "question": "What Ethernet speeds can the ESP32 MAC support, and what additional hardware does it require?",
+      "status": "active", "task_type": "paraphrase", "answerability": "answerable",
+      "expected_answer_note": "The MAC supports 10 or 100 Mbit/s through an external Ethernet PHY using MII or RMII.",
+      "evidence": [{"document_id": "esp32-trm-v5.8", "pdf_page": 461, "section": "24.1 Overview", "text_anchor": "10 Mbit/s or 100 Mbit/s through an external PHY"}]
+    },
+    {
+      "id": "errata-cpu-clock-switch-crash",
+      "question": "On affected ESP32 revisions, which direct CPU frequency transition can crash the processor, and what transition sequence is recommended?",
+      "status": "active", "task_type": "errata_diagnosis", "answerability": "answerable",
+      "expected_answer_note": "Revision v0.0 can crash when switching directly from 240 MHz to 80/160 MHz; the workaround uses 2, 40, and then 80/160 MHz, or 2, 40, and then 240 MHz.",
+      "evidence": [{"document_id": "esp32-soc-errata-v3.0", "pdf_page": 11, "section": "3.1 [CPU-3.5]", "text_anchor": "clock frequency switches directly from 240 MHz"}]
+    },
+    {
+      "id": "errata-rtc-periph-ulp-tradeoff",
+      "question": "Why can EXT0 wake-up not be used together with the ULP coprocessor or touch sensor in deep sleep on affected ESP32 chips?",
+      "status": "active", "task_type": "errata_diagnosis", "answerability": "answerable",
+      "expected_answer_note": "EXT0 requires RTC_PERIPH powered up, but the erratum requires RTC_PERIPH powered down for correct ULP and touch-sensor operation, so users must choose between them.",
+      "evidence": [{"document_id": "esp32-soc-errata-v3.0", "pdf_page": 17, "section": "3.9 [ULP-3.19]", "text_anchor": "trade-off between using the EXT0 wake-up function"}]
+    },
+    {
+      "id": "errata-gpio36-gpio39-glitch",
+      "question": "What happens to GPIO36 and GPIO39 when SAR ADC1, SAR ADC2, or AMP is powered on, and what is the workaround?",
+      "status": "active", "task_type": "errata_diagnosis", "answerability": "answerable",
+      "expected_answer_note": "The inputs are pulled down for approximately 80 ns; software should ignore GPIO36 and GPIO39 input while enabling those peripherals.",
+      "evidence": [{"document_id": "esp32-soc-errata-v3.0", "pdf_page": 19, "section": "3.12 [GPIO-3.11]", "text_anchor": "pulled down for approximately 80 ns"}]
+    },
+    {
+      "id": "errata-flash-startup-watchdog",
+      "question": "Why can slow flash startup cause an ESP32 watchdog reset, and what flash readiness time is recommended as a workaround?",
+      "status": "active", "task_type": "errata_diagnosis", "answerability": "answerable",
+      "expected_answer_note": "Reading flash before it is ready can return invalid data and prevent boot until watchdog reset; the hardware workaround is flash ready in under 800 microseconds.",
+      "evidence": [
+        {"document_id": "esp32-soc-errata-v3.0", "pdf_page": 20, "section": "3.15 [RES-3.8]", "text_anchor": "reads from the flash chip before it is ready"},
+        {"document_id": "esp32-soc-errata-v3.0", "pdf_page": 21, "section": "3.15 [RES-3.8] Workarounds", "text_anchor": "fast start-up time (<800"}
+      ]
+    },
+    {
+      "id": "native-usb-data-pins",
+      "question": "Which ESP32 GPIO pins provide the native USB D+ and D- interface?",
+      "status": "unanswerable", "task_type": "absent_answer", "answerability": "unanswerable",
+      "expected_answer_note": "The locked classic ESP32 corpus does not document a native USB peripheral or D+/D- pin assignment. A system should not invent pin numbers.",
+      "review_note": "Use later to evaluate unsupported-answer detection; it is excluded from positive retrieval metrics."
+    },
+    {
+      "id": "five-ghz-wifi-current",
+      "question": "What is the ESP32 current consumption while transmitting on a 5 GHz Wi-Fi channel?",
+      "status": "unanswerable", "task_type": "absent_answer", "answerability": "unanswerable",
+      "expected_answer_note": "The locked ESP32 corpus specifies 2.4 GHz Wi-Fi, so it provides no valid 5 GHz transmit-current measurement.",
+      "review_note": "A grounded answer should explain the unsupported premise rather than retrieve a 2.4 GHz current value as if it answered the question."
     }
   ]
 }

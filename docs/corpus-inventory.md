@@ -1,8 +1,14 @@
-# ESP32 Corpus Inventory
+# Mixed-MCU Corpus Inventory
 
-This repository currently indexes three local Espressif PDF files from `data/`.
+This repository currently indexes six local PDF files from `data/`.
 The files were inventoried on 2026-08-12. Their exact bytes are identified by
 SHA-256 in `benchmarks/esp32-retrieval-v1/corpus.json`.
+
+The retrieval benchmark remains ESP32-specific. The three non-ESP32 datasheets
+are deliberate **distractors**: they contain overlapping embedded terminology,
+peripherals, registers, tables, and electrical specifications but are never
+valid evidence for an ESP32-labelled question. This tests whether retrieval can
+identify the correct device family, not merely a semantically similar passage.
 
 ## Important version distinction
 
@@ -11,11 +17,14 @@ The documents were reached through the ESP-IDF v4.3
 but the linked PDF URLs are rolling Espressif download URLs. The local corpus is
 therefore **not an ESP-IDF v4.3 documentation snapshot**.
 
-| Local file | Document | Local edition | PDF pages | Canonical source |
-| --- | --- | ---: | ---: | --- |
-| `data/esp32_datasheet_en.pdf` | ESP32 Series Datasheet | v5.3, 2026.07 | 78 | [Espressif PDF](https://www.espressif.com/documentation/esp32_datasheet_en.pdf) |
-| `data/esp32_technical_reference_manual_en.pdf` | ESP32 Technical Reference Manual | v5.8 | 784 | [Espressif PDF](https://www.espressif.com/documentation/esp32_technical_reference_manual_en.pdf) |
-| `data/esp-chip-errata-en-master-esp32.pdf` | ESP32 Series SoC Errata | v3.0, 2025-10-11 | 36 | [Espressif PDF](https://docs.espressif.com/projects/esp-chip-errata/en/latest/esp32/esp-chip-errata-en-master-esp32.pdf) |
+| Role | Local file | Document | Local edition | PDF pages | Canonical source |
+| --- | --- | --- | ---: | ---: | --- |
+| Target | `data/esp32_datasheet_en.pdf` | ESP32 Series Datasheet | v5.3, 2026.07 | 78 | [Espressif PDF](https://www.espressif.com/documentation/esp32_datasheet_en.pdf) |
+| Target | `data/esp32_technical_reference_manual_en.pdf` | ESP32 Technical Reference Manual | v5.8 | 784 | [Espressif PDF](https://www.espressif.com/documentation/esp32_technical_reference_manual_en.pdf) |
+| Target | `data/esp-chip-errata-en-master-esp32.pdf` | ESP32 Series SoC Errata | v3.0, 2025-10-11 | 36 | [Espressif PDF](https://docs.espressif.com/projects/esp-chip-errata/en/latest/esp32/esp-chip-errata-en-master-esp32.pdf) |
+| Distractor | `data/PIC24FJ Datasheet.pdf` | PIC24FJ16MC101/102 and PIC24FJ32MC101/102/104 | DS30009997E, 2014 | 366 | [Microchip PDF](https://ww1.microchip.com/downloads/en/DeviceDoc/30009997e.pdf) |
+| Distractor | `data/STM32F446 Datasheet.pdf` | STM32F446xC/E | DS10693 Rev 11, 2026-05 | 197 | [ST PDF](https://www.st.com/resource/en/datasheet/stm32f446mc.pdf) |
+| Distractor | `data/ATmega328P Datasheet.pdf` | ATmega328P | 7810D-AVR-01/15 | 294 | [Microchip PDF](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/DataSheets/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf) |
 
 The dates above come from each document's cover or revision history, not from
 filesystem timestamps. PDF creation metadata describes when a particular PDF
@@ -24,7 +33,7 @@ was generated and is not treated as the publication version.
 ## Page numbering
 
 Ground-truth evidence uses `pdf_page`, the one-based physical page number used
-by the ingestion pipeline and PDF viewers. For these three editions, numbered
+by the ingestion pipeline and PDF viewers. For the three target editions, numbered
 body pages generally agree with the printed footer, but front matter may use
 Roman numerals or no printed page number. A human-readable `section` and a text
 anchor accompany every page label so a version change cannot silently validate
@@ -40,6 +49,10 @@ against unrelated content.
   truth.
 - Do not use random chunk IDs as labels. Chunk boundaries can change while the
   source document, page, section, and quoted evidence remain stable.
+- Distractors do not need positive golden labels for the ESP32 benchmark. Their
+  contribution is measured through target-evidence rank degradation and by
+  inspecting wrong-device results. A future multi-device benchmark would need
+  its own questions and labels for those documents.
 
 ## Current scope gaps
 

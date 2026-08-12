@@ -1,10 +1,11 @@
 {
-  "corpus_id": "esp32-local-corpus-2026-08-12",
+  "corpus_id": "mixed-mcu-corpus-2026-08-12",
   "inventoried_at": "2026-08-12",
-  "collection_page": "https://docs.espressif.com/projects/esp-idf/en/v4.3/esp32/hw-reference/index.html",
+  "benchmark_scope": "ESP32 retrieval with unrelated MCU datasheets as distractors",
   "documents": [
     {
       "document_id": "esp32-datasheet-v5.3",
+      "benchmark_role": "target",
       "path": "data/esp32_datasheet_en.pdf",
       "title": "ESP32 Series Datasheet",
       "document_version": "5.3",
@@ -15,6 +16,7 @@
     },
     {
       "document_id": "esp32-trm-v5.8",
+      "benchmark_role": "target",
       "path": "data/esp32_technical_reference_manual_en.pdf",
       "title": "ESP32 Technical Reference Manual",
       "document_version": "5.8",
@@ -25,6 +27,7 @@
     },
     {
       "document_id": "esp32-soc-errata-v3.0",
+      "benchmark_role": "target",
       "path": "data/esp-chip-errata-en-master-esp32.pdf",
       "title": "ESP32 Series SoC Errata",
       "document_version": "3.0",
@@ -32,6 +35,39 @@
       "pdf_pages": 36,
       "sha256": "10dadd5993b69c01ed80aa5a1403450bb0487a56b963ff5243137c812f3ebaf1",
       "source_url": "https://docs.espressif.com/projects/esp-chip-errata/en/latest/esp32/esp-chip-errata-en-master-esp32.pdf"
+    },
+    {
+      "document_id": "pic24fj16-32mc10x-ds30009997e",
+      "benchmark_role": "distractor",
+      "path": "data/PIC24FJ Datasheet.pdf",
+      "title": "PIC24FJ16MC101/102 and PIC24FJ32MC101/102/104 Data Sheet",
+      "document_version": "DS30009997E",
+      "release_date": "2014",
+      "pdf_pages": 366,
+      "sha256": "dfe9f4e6662ec1c7deac6f030c222adc07e6be7836f98508cc12d2729dedd2fe",
+      "source_url": "https://ww1.microchip.com/downloads/en/DeviceDoc/30009997e.pdf"
+    },
+    {
+      "document_id": "stm32f446xce-ds10693-rev11",
+      "benchmark_role": "distractor",
+      "path": "data/STM32F446 Datasheet.pdf",
+      "title": "STM32F446xC/E Datasheet",
+      "document_version": "DS10693 Rev 11",
+      "release_date": "2026-05",
+      "pdf_pages": 197,
+      "sha256": "5cea36b6dc2b623dbe7710b7b75bcb628043aa3bca0f981b7d493c46cc4e6327",
+      "source_url": "https://www.st.com/resource/en/datasheet/stm32f446mc.pdf"
+    },
+    {
+      "document_id": "atmega328p-7810d",
+      "benchmark_role": "distractor",
+      "path": "data/ATmega328P Datasheet.pdf",
+      "title": "ATmega328P Datasheet",
+      "document_version": "7810D-AVR-01/15",
+      "release_date": "2015-01",
+      "pdf_pages": 294,
+      "sha256": "fb84858d0b12c695a12b13f0c74b962d81210247d440c7a24c0ed23dfabfdfaf",
+      "source_url": "https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/DataSheets/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf"
     }
   ]
 }
