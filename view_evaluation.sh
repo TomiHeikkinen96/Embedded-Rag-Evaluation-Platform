@@ -12,7 +12,7 @@ if ! command -v curl >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Generating visualization data from the active FAISS index..."
+echo "Generating visualization data from all registered model indexes..."
 docker compose run --rm rag python scripts/visualization/generate_embedding_data.py
 
 URL="http://localhost:${PORT}"

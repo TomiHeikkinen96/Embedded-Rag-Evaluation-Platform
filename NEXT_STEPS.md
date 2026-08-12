@@ -5,7 +5,7 @@ The project is in **Phase 1: context and retrieval evaluation**.
 ## Immediate objective
 
 Turn the current repeatable query list into a small human-labelled ESP32
-retrieval benchmark before adding more embedding models or changing storage.
+retrieval benchmark before adding chunker and retrieval-method comparisons.
 
 ## Implementation order
 
@@ -13,12 +13,11 @@ retrieval benchmark before adding more embedding models or changing storage.
 2. Label stable evidence by document, page, and text anchor.
 3. Validate that every evidence label resolves against the current corpus.
 4. Capture current custom-chunker/MiniLM results as the regression baseline.
-5. Extract typed chunker, embedding, index, and retriever configurations.
-6. Refactor storage so several chunk sets and FAISS indexes can coexist.
+5. Add typed chunker and retriever configurations around the implemented model registry.
+6. Separate multiple chunk-set identities using the implemented multi-index schema.
 7. Add raw-500 and LangChain recursive chunking baselines.
-8. Add the medium and technical embedding candidates.
-9. Add literal retrieval, MRR, Recall@k, latency, and artifact-size reporting.
-10. Make the browser explorer consume saved evaluation runs.
+8. Add literal retrieval, MRR, Recall@k, latency, and artifact-size reporting.
+9. Make the browser explorer consume saved evaluation runs.
 
 ## Guardrails
 

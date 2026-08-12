@@ -1,7 +1,8 @@
 # Retrieval Evaluation Plan
 
-Status: proposed Phase 1 work; only the current custom-chunker/MiniLM path is
-implemented.
+Status: active Phase 1 work. The custom chunker builds MiniLM, BGE, and Jina
+code indexes and the explorer compares them. Labelled metrics, alternate
+chunkers, and literal retrieval remain planned.
 
 ## Question
 
@@ -38,11 +39,12 @@ technical model are not assumed winners.
 | --- | --- | --- |
 | `mini` | `sentence-transformers/all-MiniLM-L6-v2` | Fast 384-dimensional general baseline and current behaviour |
 | `bge` | `BAAI/bge-base-en-v1.5` | Medium 768-dimensional retrieval model |
-| `technical` | `jinaai/jina-embeddings-v2-base-code` | Technical/code-biased candidate requiring a compatibility spike |
+| `technical` | `jinaai/jina-embeddings-v2-base-code` | Technical/code-biased 768-dimensional candidate |
 
 Store the complete model id, pinned revision, dimensionality, normalization,
 maximum input length, and query/document prefix policy. The technical candidate
-uses remote model code, so review and pin it before adoption.
+uses remote model code. It is compatible with the current Transformers 4.57.6
+pin; its remote model revision still needs an explicit immutable pin.
 
 Before accepting any new model on the CPU-only Apple Silicon environment,
 measure model loading, memory, embedding throughput, query latency, and artifact
@@ -167,8 +169,8 @@ generation and hardware validation.
 
 ## Persisted identity
 
-The current schema assumes one active embedding model and stores model identity
-on chunks. The comparison needs separate identities:
+The current schema separates shared chunks from model-specific indexes. The
+complete comparison still needs these identities:
 
 - document: source path plus content hash
 - chunking configuration: strategy, parameters, and version
@@ -177,8 +179,8 @@ on chunks. The comparison needs separate identities:
 - index: corpus, chunk-set, and embedding identities
 - evaluation run: benchmark, retriever/index configuration, and code revision
 
-`indexed_chunks` should eventually identify `(index_id, vector_id)` because
-different FAISS indexes may reuse vector ids safely.
+`indexed_chunks` identifies `(index_id, vector_id)`, so different FAISS indexes
+may reuse vector ids safely.
 
 Example artifact paths:
 
@@ -196,15 +198,15 @@ not require adopting its vector-store abstraction.
 Keep selectors strict and task-oriented:
 
 ```bash
-./ingest_data.sh --model mini --chunker custom
-./ingest_data.sh --model all --chunker all
+./ingest_data.sh --model mini
+./ingest_data.sh --model all
 ./run_evaluation.sh --all
 ./view_evaluation.sh
 ```
 
-These selectors and `run_evaluation.sh` are planned, not currently available.
-Ordinary ingestion should keep a fast targeted default; building all nine dense
-indexes must remain explicit on the M1.
+Model selectors are implemented. Chunker selectors and `run_evaluation.sh`
+remain planned. Building the future nine-condition dense matrix must remain
+explicit on the M1.
 
 Python entry points remain usable through `run_script.sh`, and root shell scripts
 remain Docker conveniences rather than the core business logic.
@@ -213,14 +215,14 @@ remain Docker conveniences rather than the core business logic.
 
 1. Define, label, and validate benchmark cases.
 2. Capture the current custom/MiniLM result as a regression baseline.
-3. Define typed chunker, embedder, retriever, and experiment configurations.
-4. Separate chunk-set and embedding/index identities in storage.
+3. Define typed chunker, retriever, and experiment configurations around the
+   implemented embedding-model registry.
+4. Separate multiple chunk-set identities using the implemented multi-index storage.
 5. Add raw-500 and recursive chunkers with source-evidence validation.
-6. Add medium and technical model candidates after compatibility checks.
-7. Add literal retrieval and persist all ranked results and metrics.
-8. Refactor the explorer to consume saved runs and expose experiment controls.
-9. Consider hybrid retrieval only after inspecting baseline failures.
-10. Carry the best-understood configurations into grounded generation evaluation.
+6. Add literal retrieval and persist all ranked results and metrics.
+7. Refactor the explorer to consume saved runs and expose experiment controls.
+8. Consider hybrid retrieval only after inspecting baseline failures.
+9. Carry the best-understood configurations into grounded generation evaluation.
 
 ## Convincing outcome
 

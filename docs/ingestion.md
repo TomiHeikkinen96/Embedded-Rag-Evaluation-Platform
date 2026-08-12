@@ -8,17 +8,29 @@ Run:
 ./ingest_data.sh
 ```
 
-The ingestion path hashes PDFs under `data/` and compares them with the local
-file-tracking database.
+The ingestion path hashes PDFs under `data/`, compares them with the local
+file-tracking database, and ensures the requested model indexes exist.
 
-- New documents are loaded, chunked, embedded, and added.
-- Changed documents have their old chunks and vectors replaced.
-- Restored documents are added again.
-- Deleted documents have their chunks and vectors removed.
-- Unchanged documents are skipped.
+- New, changed, restored, and deleted documents update the shared chunk set.
+- A source change invalidates every model index so comparisons cannot use
+  different chunk corpora.
+- Unchanged PDFs are not parsed again.
+- Missing requested indexes are built from the stored shared chunks.
+- Current requested indexes are skipped.
 
-This is the normal development workflow. It preserves the current index and
-avoids re-embedding the full corpus after every small change.
+Without selectors, all three registered model indexes are made current. Use
+`mini`, `bge`, or `technical` to build only one index:
+
+```bash
+./ingest_data.sh --model all
+./ingest_data.sh --model bge
+```
+
+A complete explorer requires all three.
+
+Each model build reports model-loading time, embedding time and throughput,
+FAISS/metadata write time, and total elapsed time. Loading time includes any
+first-run model download, so compare warm-cache runs separately from first use.
 
 ## Clean rebuild
 
@@ -28,7 +40,7 @@ Run:
 ./ingest_data.sh --clean
 ```
 
-Clean mode asks before removing the generated FAISS index and SQLite state. If
+Clean mode asks before removing generated FAISS indexes and SQLite state. If
 the confirmation is declined, existing storage is left unchanged. Automation
 may explicitly add `--yes`:
 
@@ -56,9 +68,31 @@ planned chunker comparison.
 
 ## Stored metadata
 
-SQLite records source location, retrieval text, larger display context,
-embedding model, and the explicit vector mapping. The FAISS file stores the
-normalized vectors used for inner-product/cosine retrieval.
+One SQLite database records the shared chunk corpus, source location, retrieval
+text, larger display context, model/index configurations, and explicit vector
+mappings. Chunk metadata is intentionally not copied into one database per
+model. Each model has its own normalized FAISS artifact:
+
+```text
+storage/indexes/custom/mini.faiss
+storage/indexes/custom/bge.faiss
+storage/indexes/custom/technical.faiss
+```
+
+SQLite maps `(index_id, vector_id)` to a chunk, so the same numeric vector id
+can safely exist in every model index.
+
+## Model registry
+
+- `mini`: `sentence-transformers/all-MiniLM-L6-v2`, fast 384-dimensional baseline
+- `bge`: `BAAI/bge-base-en-v1.5`, 768-dimensional retrieval model
+- `technical`: `jinaai/jina-embeddings-v2-base-code`, 768-dimensional code-biased candidate
+
+BGE receives its retrieval instruction on queries, not documents. Jina loads
+Hugging Face model code with `trust_remote_code=True`. Transformers is pinned to
+`4.57.6` because the current Jina code imports an API removed in Transformers
+5.x; test Jina before changing that dependency. Jina's `optimum` warning concerns
+optional ONNX export and is suppressed because this pipeline uses PyTorch.
 
 See [retrieval pipeline](retrieval-pipeline.md) for how those artifacts are used
 during search.

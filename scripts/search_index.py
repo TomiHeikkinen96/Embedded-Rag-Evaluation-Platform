@@ -13,10 +13,9 @@ except ImportError as exc:
     ) from exc
 
 from processing.embedder import TextEmbedder
-from project_paths import INDEX_PATH, METADATA_DB_PATH
-from utils.db import fetch_chunks_by_vector_ids, initialize_metadata_db
-
-EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+from processing.embedding_models import DEFAULT_MODEL_ALIAS, EMBEDDING_MODELS, get_embedding_model
+from project_paths import METADATA_DB_PATH, faiss_index_path
+from utils.db import fetch_chunks_by_vector_ids, initialize_metadata_db, make_index_id
 TOP_K = 5
 CANDIDATE_POOL = 50
 # Heuristic weight for exact-term overlap in the reranker.
@@ -33,9 +32,11 @@ LOW_VALUE_SECTION_PATTERNS = (
 )
 
 
-def ensure_search_inputs() -> None:
-    if not INDEX_PATH.exists():
-        print(f"Error: FAISS index not found at {INDEX_PATH}")
+def ensure_search_inputs(model_alias: str) -> None:
+    index_path = faiss_index_path(model_alias)
+    if not index_path.exists():
+        print(f"Error: FAISS index not found at {index_path}")
+        print(f"Build it with ./ingest_data.sh --model {model_alias}")
         sys.exit(1)
 
     if not METADATA_DB_PATH.exists():
@@ -46,6 +47,13 @@ def ensure_search_inputs() -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Search the local FAISS index using one or more queries."
+    )
+    parser.add_argument(
+        "--model",
+        type=str.lower,
+        choices=list(EMBEDDING_MODELS),
+        default=DEFAULT_MODEL_ALIAS,
+        help=f"Embedding model index to search. Defaults to {DEFAULT_MODEL_ALIAS}.",
     )
     parser.add_argument(
         "queries",
@@ -98,16 +106,16 @@ def search_query(
     query: str,
     index: faiss.Index,
     embedder: TextEmbedder,
+    index_id: str,
 ) -> list[dict]:
-    query_embedding = embedder.embed_texts([query])
-    faiss.normalize_L2(query_embedding)
+    query_embedding = embedder.embed_texts([query], input_type="query")
 
     scores, indices = index.search(query_embedding.astype(np.float32), CANDIDATE_POOL)
     vector_ids = [int(idx) for idx in indices[0] if idx >= 0]
     if not vector_ids:
         return []
 
-    rows = fetch_chunks_by_vector_ids(METADATA_DB_PATH, vector_ids)
+    rows = fetch_chunks_by_vector_ids(METADATA_DB_PATH, index_id, vector_ids)
     row_lookup = {int(row["vector_id"]): row for row in rows}
     ranked_results: list[dict] = []
     seen_paragraphs: set[tuple[str, int | None, int | None]] = set()
@@ -173,11 +181,12 @@ def print_results(query: str, ranked_results: list[dict]) -> None:
 
 def main() -> None:
     args = parse_args()
-    ensure_search_inputs()
+    ensure_search_inputs(args.model)
     initialize_metadata_db(METADATA_DB_PATH)
 
-    index = faiss.read_index(str(INDEX_PATH))
-    embedder = TextEmbedder(model_name=EMBEDDING_MODEL_NAME)
+    index = faiss.read_index(str(faiss_index_path(args.model)))
+    embedder = TextEmbedder(get_embedding_model(args.model))
+    index_id = make_index_id(args.model)
 
     queries = args.queries
     if not queries:
@@ -190,7 +199,7 @@ def main() -> None:
     for index_number, query in enumerate(queries):
         if index_number > 0:
             print("-" * 80)
-        ranked_results = search_query(query, index, embedder)
+        ranked_results = search_query(query, index, embedder, index_id)
         print_results(query, ranked_results)
 
 

@@ -14,9 +14,10 @@ software changes when its harness supplies grounded context and checks results
 against software and hardware evidence.
 
 > **Current phase:** retrieval foundations and evaluation. PDF ingestion,
-> incremental FAISS indexing, SQLite metadata, local search, reranking, batch
-> queries, and a 3D embedding explorer are implemented. The labelled multi-model
-> and multi-chunker evaluation matrix is next.
+> hash-based chunk ingestion, three model-specific FAISS indexes, SQLite
+> metadata, local search, reranking, batch queries, and a switchable 3D
+> embedding explorer are implemented. The labelled benchmark and multi-chunker
+> comparison are next.
 
 ## Project path
 
@@ -58,8 +59,8 @@ roadmap is an experimental sequence, not a claim that the later stages exist.
 flowchart LR
     PDF["ESP32 PDFs"] --> LOAD["Load and clean"]
     LOAD --> CHUNK["Sentence/table-aware chunks"]
-    CHUNK --> EMBED["Normalized embeddings"]
-    EMBED --> FAISS["FAISS vectors"]
+    CHUNK --> EMBED["MiniLM · BGE · Jina code"]
+    EMBED --> FAISS["One FAISS index per model"]
     CHUNK --> SQLITE["SQLite metadata"]
     FAISS --> SEARCH["Retrieve and rerank"]
     SQLITE --> SEARCH
@@ -85,8 +86,12 @@ docker compose build
 Useful commands:
 
 ```bash
-# Incrementally process only changed source PDFs
+# Build all missing model indexes; reprocess changed PDFs
 ./ingest_data.sh
+
+# Build or search one strict model alias
+./ingest_data.sh --model bge
+./run_script.sh search_index.py --model bge "maximum current"
 
 # Confirm, clear generated storage, and rebuild
 ./ingest_data.sh --clean

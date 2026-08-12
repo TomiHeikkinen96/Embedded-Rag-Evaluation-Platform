@@ -17,23 +17,30 @@ detail belongs in `docs/`; completed history remains available in Git.
 
 ## Next — configurable retrieval matrix
 
-- [ ] Define typed registries for chunkers, embedding models, and retrievers.
-- [ ] Separate chunk-set identity from embedding/index identity in SQLite.
-- [ ] Support several FAISS indexes without overwriting one active state.
+- [ ] Define typed registries for chunkers and retrievers. The embedding-model
+  registry is implemented.
+- [x] Separate shared chunk identity from embedding/index identity in SQLite.
+- [x] Support several FAISS indexes without overwriting one active state.
 - [ ] Add raw 500-character chunking.
 - [ ] Add LangChain's standalone recursive-character splitter.
-- [ ] Add medium and technical embedding-model candidates after local compatibility checks.
+- [x] Add BGE medium and Jina code embedding candidates with local compatibility checks.
 - [ ] Add transparent literal retrieval and zero-result reporting.
 - [ ] Compare the complete matrix using the same labelled benchmark and top-k budget.
 
 ## Explorer and reporting
 
 - [ ] Fit PCA on corpus vectors and transform queries through fixed axes.
-- [ ] Report explained variance for the displayed components.
-- [ ] Add model, chunker, and retrieval-method controls.
+- [x] Report explained variance for the displayed components.
+- [ ] Add chunker and retrieval-method controls. Model selection is implemented.
 - [ ] Add per-question reciprocal rank, aggregate MRR/Recall@k, latency, chunk
   count, and index-size views.
 - [ ] Add expected-evidence versus retrieved-result failure inspection.
+
+## Environment and performance
+
+- [ ] Test whether native macOS PyTorch MPS accelerates ingestion compared with
+  the Docker/Colima CPU path. Verify all three models, output equivalence,
+  memory use, and whether the extra host workflow is worth maintaining.
 
 ## Later phases
 
@@ -52,12 +59,14 @@ detail belongs in `docs/`; completed history remains available in Git.
 - [x] Search, batch-query, database-inspection, and index-integrity tools.
 - [x] Docker/Colima workflow with task-oriented root scripts.
 - [x] Interactive 3D PCA explorer using original-space cosine scores.
+- [x] Three-model explorer with persistent question selection across model switches.
+- [x] Per-model load, embedding-throughput, index-write, and total timing output.
 - [x] Retrieval-evaluation matrix and staged architecture plan.
 
 ## Current known limitations
 
 - PDF tables remain the noisiest source format.
 - The current query file is repeatable but not yet labelled ground truth.
-- The current schema and explorer support only one active embedding index.
+- The model indexes are comparable, but retrieval accuracy is not yet labelled or scored.
 - Weak semantic matches can survive in lower ranks.
 - PCA is explanatory and cannot establish retrieval correctness.

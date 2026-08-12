@@ -10,11 +10,12 @@ It is intentionally short. It should stay aligned with the actual code and shoul
 2. Prose is chunked using sentence-aware grouping.
 3. Structured PDF content such as tables is chunked using smaller line-group logic with some local header/context retention.
 4. Chunk metadata is stored in SQLite.
-5. Normal ingest runs update the active FAISS index incrementally and record explicit vector-to-chunk mappings in SQLite.
-6. Search retrieves candidate vector ids from FAISS.
-7. Search resolves those vector ids back to chunk metadata through `indexed_chunks`.
-8. Retrieved candidates are reranked using simple heuristic signals.
-9. Search output shows the matched chunk and larger paragraph context when available.
+5. Source changes update the shared chunk set and invalidate dependent indexes.
+6. Each selected embedding model builds its own FAISS index over those exact chunks.
+7. Search retrieves candidate vector ids from the selected FAISS index.
+8. Search resolves `(index_id, vector_id)` back to chunk metadata through `indexed_chunks`.
+9. Retrieved candidates are reranked using simple heuristic signals.
+10. Search output shows the matched chunk and larger paragraph context when available.
 
 ## Retrieval Unit vs Display Context
 
@@ -40,32 +41,34 @@ The current design treats retrieval precision and context expansion as separate 
 
 The repository no longer relies on FAISS row order matching a repeated SQLite sort.
 
-Instead, the active index stores explicit retrieval metadata:
+Instead, model-specific indexes store explicit retrieval metadata:
 
 - `indexes`
 - `indexed_chunks`
 
-`indexes` records the active index metadata such as embedding model, update time, and chunk count.
+`indexes` records the index id, chunker, model, dimensions, artifact path,
+update time, and chunk count.
 
-`indexed_chunks` maps each FAISS `vector_id` to a durable `chunk_id`.
+`indexed_chunks` maps each `(index_id, vector_id)` to a durable `chunk_id`.
 
 This makes the retrieval linkage explicit:
 
-- FAISS returns `vector_id`
-- SQLite resolves `vector_id -> chunk_id -> chunk metadata`
+- FAISS returns `vector_id` for the selected `index_id`
+- SQLite resolves `(index_id, vector_id) -> chunk_id -> chunk metadata`
 
 This design is easier to inspect and less fragile than relying on implicit row ordering across systems.
 
 ## Incremental Update Behavior
 
-By default, ingestion now mutates the active index in place:
+By default, ingestion keeps parsing incremental while preserving controlled
+model comparisons:
 
-- deleted files remove their existing vectors
-- changed files remove their old vectors and add newly embedded replacements
-- new files add only their new vectors
+- unchanged PDFs reuse stored chunks
+- a changed chunk corpus invalidates all dependent indexes
+- selected missing indexes rebuild from the shared chunk rows
 
 `--force-rebuild` still exists as the clean rebuild path.
-That mode clears storage and rebuilds the active index from scratch.
+That mode clears storage and rebuilds selected indexes from scratch.
 
 ## File Deletion Handling
 
@@ -75,7 +78,7 @@ When a tracked file disappears:
 
 - its chunks are deleted from SQLite
 - its file-tracking record is marked as no longer present
-- the active FAISS index removes its vectors automatically
+- dependent FAISS indexes are invalidated and selected indexes are rebuilt
 
 The current design prefers deletion over soft-deactivation so the demo database stays small and easy to reason about while retrieval behavior is still being evaluated.
 
@@ -135,6 +138,7 @@ Interactive or multi-query search:
 ```bash
 ./run_script.sh search_index.py
 ./run_script.sh search_index.py "maximum current" "ADC pins"
+./run_script.sh search_index.py --model technical "gpio matrix"
 ```
 
 Batch benchmarking:
@@ -142,6 +146,7 @@ Batch benchmarking:
 ```bash
 ./run_script.sh benchmark_search.py
 ./run_script.sh benchmark_search.py --file benchmark_queries.txt
+./run_script.sh benchmark_search.py --model bge
 ```
 
 Database inspection:
@@ -149,5 +154,6 @@ Database inspection:
 ```bash
 ./run_script.sh db_inspect.py stats
 ./run_script.sh db_inspect.py index-status
+./run_script.sh db_inspect.py --model technical index-integrity
 ./run_script.sh db_inspect.py page-chunks --path-contains esp32-wroom-32u_datasheet_en.pdf --page 25
 ```

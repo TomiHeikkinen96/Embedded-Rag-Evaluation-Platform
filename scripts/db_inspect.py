@@ -7,11 +7,11 @@ from typing import Iterable
 
 import faiss
 
-from project_paths import INDEX_PATH, METADATA_DB_PATH
-from utils.db import initialize_metadata_db
+from processing.embedding_models import DEFAULT_MODEL_ALIAS, EMBEDDING_MODELS
+from project_paths import METADATA_DB_PATH, faiss_index_path
+from utils.db import initialize_metadata_db, make_index_id
 
 DEFAULT_DB_PATH = METADATA_DB_PATH
-DEFAULT_INDEX_PATH = INDEX_PATH
 
 
 def parse_args() -> argparse.Namespace:
@@ -25,10 +25,11 @@ def parse_args() -> argparse.Namespace:
         help=f"Path to the metadata SQLite database. Defaults to {DEFAULT_DB_PATH}.",
     )
     parser.add_argument(
-        "--index",
-        type=Path,
-        default=DEFAULT_INDEX_PATH,
-        help=f"Path to the FAISS index file. Defaults to {DEFAULT_INDEX_PATH}.",
+        "--model",
+        type=str.lower,
+        choices=list(EMBEDDING_MODELS),
+        default=DEFAULT_MODEL_ALIAS,
+        help=f"Model used by index-integrity. Defaults to {DEFAULT_MODEL_ALIAS}.",
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -122,30 +123,38 @@ def command_index_status(connection: sqlite3.Connection) -> None:
     rows = connection.execute(
         """
         SELECT
-            indexes.index_version,
+            indexes.index_id,
+            indexes.model_alias,
             indexes.embedding_model,
+            indexes.dimensions,
             indexes.built_at,
             indexes.chunk_count,
-            COUNT(indexed_chunks.vector_id) AS mapped_vectors
+            COUNT(indexed_chunks.vector_id) AS mapped_vectors,
+            indexes.index_path
         FROM indexes
         LEFT JOIN indexed_chunks
-            ON indexed_chunks.index_version = indexes.index_version
-        GROUP BY indexes.index_version, indexes.embedding_model, indexes.built_at, indexes.chunk_count
+            ON indexed_chunks.index_id = indexes.index_id
+        GROUP BY indexes.index_id, indexes.model_alias, indexes.embedding_model,
+                 indexes.dimensions, indexes.built_at, indexes.chunk_count,
+                 indexes.index_path
         ORDER BY indexes.built_at DESC
-        LIMIT 5
         """
     ).fetchall()
     print_rows(rows)
 
 
-def command_index_integrity(connection: sqlite3.Connection, index_path: Path) -> None:
+def command_index_integrity(
+    connection: sqlite3.Connection, model_alias: str, index_path: Path
+) -> None:
+    index_id = make_index_id(model_alias)
     counts = connection.execute(
         """
         SELECT
             (SELECT COUNT(*) FROM chunks) AS chunk_count,
-            (SELECT COUNT(*) FROM indexed_chunks) AS indexed_chunk_count,
-            (SELECT COALESCE(MAX(vector_id), -1) FROM indexed_chunks) AS max_vector_id
-        """
+            (SELECT COUNT(*) FROM indexed_chunks WHERE index_id = ?) AS indexed_chunk_count,
+            (SELECT COALESCE(MAX(vector_id), -1) FROM indexed_chunks WHERE index_id = ?) AS max_vector_id
+        """,
+        (index_id, index_id),
     ).fetchone()
 
     faiss_vector_count = 0
@@ -162,6 +171,8 @@ def command_index_integrity(connection: sqlite3.Connection, index_path: Path) ->
     print(
         {
             "chunk_count": chunk_count,
+            "model_alias": model_alias,
+            "index_id": index_id,
             "indexed_chunk_count": indexed_chunk_count,
             "faiss_vector_count": faiss_vector_count,
             "max_vector_id": max_vector_id,
@@ -237,7 +248,7 @@ def main() -> None:
         elif args.command == "index-status":
             command_index_status(connection)
         elif args.command == "index-integrity":
-            command_index_integrity(connection, args.index)
+            command_index_integrity(connection, args.model, faiss_index_path(args.model))
         elif args.command == "largest-expansions":
             command_largest_expansions(connection, args.limit)
         elif args.command == "page-chunks":

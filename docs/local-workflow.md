@@ -25,8 +25,11 @@ an image rebuild.
 ## High-level commands
 
 ```bash
-# Incremental ingestion
+# Update chunks and build all missing model indexes
 ./ingest_data.sh
+
+# Build one model-specific index
+./ingest_data.sh --model bge
 
 # Clean rebuild with confirmation
 ./ingest_data.sh --clean
@@ -46,10 +49,12 @@ environment:
 
 ```bash
 ./run_script.sh search_index.py "maximum current" "ADC pins"
+./run_script.sh search_index.py --model technical "gpio matrix"
 ./run_script.sh benchmark_search.py --top-k 3
+./run_script.sh benchmark_search.py --model bge --top-k 3
 ./run_script.sh db_inspect.py stats
 ./run_script.sh db_inspect.py index-status
-./run_script.sh db_inspect.py index-integrity
+./run_script.sh db_inspect.py --model technical index-integrity
 ```
 
 The wrappers resolve the project directory themselves and can be invoked from a
@@ -58,7 +63,8 @@ different working directory.
 ## Local files
 
 - Put source PDFs under `data/`.
-- Generated FAISS and SQLite files appear under `storage/`.
+- The shared SQLite database appears under `storage/`; model FAISS files appear
+  under `storage/indexes/custom/`.
 - Downloaded Hugging Face models persist in the Compose volume.
 - Generated explorer data appears as `visualization/embedding-data.json`.
 

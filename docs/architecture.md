@@ -15,8 +15,8 @@ execution are later phases.
 flowchart LR
     PDF["PDF corpus"] --> LOADER["PDF loader"]
     LOADER --> CHUNKER["Custom chunker"]
-    CHUNKER --> EMBEDDER["Text embedder"]
-    EMBEDDER --> FAISS["FAISS index"]
+    CHUNKER --> EMBEDDER["Model registry and text embedder"]
+    EMBEDDER --> FAISS["Model-specific FAISS indexes"]
     CHUNKER --> DB["SQLite metadata"]
     FAISS --> RETRIEVE["Candidate retrieval"]
     DB --> RETRIEVE
@@ -47,15 +47,17 @@ Project-level resources remain at the root:
 
 - Search ranks `chunk_text`; `paragraph_text` is display or downstream context.
 - FAISS identity is resolved through the explicit
-  `vector_id -> chunk_id -> metadata` mapping.
+  `(index_id, vector_id) -> chunk_id -> metadata` mapping.
+- Every model comparison uses the same stored chunk identities.
 - Normal ingestion is incremental; destructive rebuilding is explicit.
 - Retrieval metrics and generated-answer metrics remain separate.
 - Framework comparisons must not silently change several experimental variables
   at once.
 
-## Planned experiment architecture
+## Experiment architecture
 
-The current single index will evolve into one configurable pipeline:
+The model registry and multi-index layer implement the first configurable
+dimension. Chunkers and retrieval methods remain planned:
 
 ```text
 documents
@@ -68,5 +70,5 @@ documents
   -> saved metrics and explorer data
 ```
 
-See the [retrieval evaluation plan](retrieval-evaluation-plan.md) for proposed
-configuration identities and multi-index storage.
+See the [retrieval evaluation plan](retrieval-evaluation-plan.md) for the
+remaining configuration identities and comparison matrix.

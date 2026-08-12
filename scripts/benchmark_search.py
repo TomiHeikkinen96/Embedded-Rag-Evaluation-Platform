@@ -6,21 +6,28 @@ from pathlib import Path
 import faiss
 
 from processing.embedder import TextEmbedder
+from processing.embedding_models import DEFAULT_MODEL_ALIAS, EMBEDDING_MODELS, get_embedding_model
 from project_paths import BENCHMARK_QUERIES_PATH, PROJECT_ROOT
 from search_index import (
-    EMBEDDING_MODEL_NAME,
-    INDEX_PATH,
     METADATA_DB_PATH,
     ensure_search_inputs,
     preview_text,
     search_query,
 )
-from utils.db import initialize_metadata_db
+from project_paths import faiss_index_path
+from utils.db import initialize_metadata_db, make_index_id
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run a standardized batch of search queries against the local index."
+    )
+    parser.add_argument(
+        "--model",
+        type=str.lower,
+        choices=list(EMBEDDING_MODELS),
+        default=DEFAULT_MODEL_ALIAS,
+        help=f"Embedding model index to evaluate. Defaults to {DEFAULT_MODEL_ALIAS}.",
     )
     parser.add_argument(
         "queries",
@@ -69,11 +76,12 @@ def main() -> None:
     if not queries:
         raise SystemExit("No benchmark queries provided.")
 
-    ensure_search_inputs()
+    ensure_search_inputs(args.model)
     initialize_metadata_db(METADATA_DB_PATH)
 
-    index = faiss.read_index(str(INDEX_PATH))
-    embedder = TextEmbedder(model_name=EMBEDDING_MODEL_NAME)
+    index = faiss.read_index(str(faiss_index_path(args.model)))
+    embedder = TextEmbedder(get_embedding_model(args.model))
+    index_id = make_index_id(args.model)
 
     for query_index, query in enumerate(queries):
         if query_index > 0:
@@ -81,7 +89,7 @@ def main() -> None:
 
         print(f"Query: {query}")
         print()
-        results = search_query(query, index, embedder)
+        results = search_query(query, index, embedder, index_id)
         if not results:
             print("No matches found.")
             print()
