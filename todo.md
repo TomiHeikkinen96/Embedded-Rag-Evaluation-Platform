@@ -51,6 +51,14 @@ Agents should update this file when priorities become clearer, when work is comp
 
 ## Search Quality
 
+- [x] Add a reproducible interactive embedding-space visualization.
+  Notes:
+  `run_visualization.sh` now reconstructs vectors from the active FAISS index, embeds the maintained benchmark queries, reduces the combined vectors to three PCA dimensions, and serves a rotatable browser view with original-space cosine scores.
+  Why:
+  This provides a presentation-friendly way to explain embeddings while keeping the distinction between projected geometry and actual retrieval scoring explicit.
+  Recommended next step:
+  Add stable relevance labels before interpreting cluster shape as retrieval quality, then display Recall@k and MRR beside the geometry.
+
 - [x] Move indexing away from paragraph-sized chunks.
   Notes:
   Sentence-oriented chunking has now been implemented for prose, and smaller line-group chunking has been added for structured PDF content such as tables.

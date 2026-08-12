@@ -48,6 +48,28 @@ Right now this repo provides:
 - explicit index-build metadata and vector-to-chunk mapping in SQLite
 - FAISS vector indexing with durable vector ids
 - simple local search over indexed content
+- an interactive 3D embedding and retrieval visualization generated from the active index
+
+### Interactive embedding visualization
+
+With Colima running and an index already built, generate the current PCA projection
+and open the local visualization with:
+
+```bash
+./run_visualization.sh
+```
+
+The script rebuilds the Docker image when needed, reconstructs the indexed chunk
+vectors, embeds the queries in `benchmark_queries.txt`, and serves the visualization
+at `http://localhost:8000`. Pass a different port as the first argument if needed:
+
+```bash
+./run_visualization.sh 8080
+```
+
+The rotatable plot is an explanatory three-dimensional PCA projection. Cosine
+similarities shown in the interface are calculated from the original 384-dimensional
+embedding vectors, not from distances in the projected view.
 
 The current implementation is intentionally local-first. Source data is processed locally for this demo and is not intended to be redistributed through the repository.
 
@@ -167,6 +189,8 @@ python search_index.py
 ├── storage/
 ├── chunkers/
 ├── processing/
+├── visualization/
+├── run_visualization.sh
 └── utils/
 ```
 

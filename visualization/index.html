@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAGeval Embedding Lab</title>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.1.0/plotly.min.js"></script>
+  <style>
+    :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    body { background: light-dark(#f7f8fb, #111318); color: light-dark(#172033, #edf1f7); margin: 0; }
+    main { margin: 0 auto; max-width: 1180px; padding: 26px 24px 36px; }
+    h1 { font-size: clamp(22px, 3vw, 34px); letter-spacing: -0.03em; margin: 0 0 5px; }
+    .subtitle { color: light-dark(#586174, #aeb7c6); margin: 0 0 20px; }
+    .query-strip { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+    button { background: light-dark(#ffffff, #1c2028); border: 1px solid light-dark(#dce1e9, #343b48); border-radius: 999px; color: inherit; cursor: pointer; padding: 7px 12px; }
+    button[aria-pressed="true"] { background: #7557ff; border-color: #7557ff; color: white; }
+    .metrics { display: flex; flex-wrap: wrap; gap: 10px 28px; font-size: 14px; margin-bottom: 3px; }
+    .metrics span:not(:first-child) { color: light-dark(#586174, #aeb7c6); }
+    .metrics strong { color: light-dark(#172033, #edf1f7); }
+    #embedding-plot { height: min(68vh, 680px); min-height: 440px; width: 100%; }
+    .selected { border-top: 1px solid light-dark(#dce1e9, #343b48); line-height: 1.45; min-height: 22px; padding-top: 12px; }
+    .note { color: light-dark(#586174, #aeb7c6); font-size: 13px; margin: 16px 0 0; }
+    .error { background: #842029; border-radius: 8px; color: white; padding: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>ESP32 embedding & retrieval lab</h1>
+    <p class="subtitle">Rotate, zoom, select a benchmark query, and inspect its nearest chunks.</p>
+    <div class="query-strip" aria-label="Benchmark query"></div>
+    <div class="metrics" aria-live="polite">
+      <span><strong class="query-name"></strong></span>
+      <span>Top cosine <strong class="top-score"></strong></span>
+      <span>Top-1 vs top-10 separation <strong class="separation"></strong></span>
+    </div>
+    <div id="embedding-plot" role="img" aria-label="Rotatable three-dimensional PCA projection of chunk and query embeddings"></div>
+    <div class="selected" aria-live="polite"></div>
+    <p class="note">PCA is a three-dimensional explanation of the space. Retrieval scores are calculated from the original embedding vectors.</p>
+  </main>
+  <script>
+    const plot = document.getElementById('embedding-plot');
+    const strip = document.querySelector('.query-strip');
+    const selectedText = document.querySelector('.selected');
+    let payload;
+    let selectedQuery = 0;
+
+    function themeColor(light, dark) {
+      return matchMedia('(prefers-color-scheme: dark)').matches ? dark : light;
+    }
+
+    function pointTrace(points, name, size, opacity, queryIndex, showScale) {
+      return {
+        type: 'scatter3d', mode: 'markers', name,
+        x: points.map(point => point.xyz[0]),
+        y: points.map(point => point.xyz[1]),
+        z: points.map(point => point.xyz[2]),
+        customdata: points.map(point => [point.page, point.text, point.similarities[queryIndex]]),
+        marker: {
+          size, opacity,
+          color: points.map(point => point.similarities[queryIndex]),
+          colorscale: 'Viridis', cmin: -0.05, cmax: 0.55,
+          colorbar: showScale ? { title: { text: 'cosine' }, thickness: 12, len: 0.65 } : undefined
+        },
+        hovertemplate: 'page %{customdata[0]} · cosine %{customdata[2]:.3f}<br>%{customdata[1]}<extra></extra>'
+      };
+    }
+
+    function draw() {
+      const ranked = payload.points.slice().sort(
+        (first, second) => second.similarities[selectedQuery] - first.similarities[selectedQuery]
+      );
+      const top = ranked.slice(0, 12);
+      const rest = ranked.slice(12);
+      const queryPoint = payload.query_points[selectedQuery];
+      const foreground = themeColor('#172033', '#edf1f7');
+      const grid = themeColor('#dce1e9', '#343b48');
+      const axis = title => ({
+        title: { text: title }, showbackground: false,
+        gridcolor: grid, zerolinecolor: grid, color: foreground
+      });
+      Plotly.react(plot, [
+        pointTrace(rest, 'other chunks', 3, 0.42, selectedQuery, true),
+        pointTrace(top, 'top 12', 7, 0.95, selectedQuery, false),
+        {
+          type: 'scatter3d', mode: 'markers+text', name: 'query',
+          x: [queryPoint[0]], y: [queryPoint[1]], z: [queryPoint[2]],
+          text: ['query'], textposition: 'top center',
+          marker: { size: 10, symbol: 'diamond', color: '#ff4f91' },
+          hovertemplate: `${payload.queries[selectedQuery]}<extra></extra>`
+        }
+      ], {
+        paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+        margin: { l: 0, r: 0, t: 5, b: 0 }, font: { color: foreground, size: 12 },
+        legend: { orientation: 'h', x: 0, y: 1.02 },
+        scene: {
+          xaxis: axis('PCA 1'), yaxis: axis('PCA 2'), zaxis: axis('PCA 3'),
+          aspectmode: 'cube', bgcolor: 'rgba(0,0,0,0)'
+        }
+      }, { responsive: true, displaylogo: false });
+
+      document.querySelector('.query-name').textContent = payload.queries[selectedQuery];
+      document.querySelector('.top-score').textContent = ranked[0].similarities[selectedQuery].toFixed(3);
+      document.querySelector('.separation').textContent = (
+        ranked[0].similarities[selectedQuery] - ranked[Math.min(9, ranked.length - 1)].similarities[selectedQuery]
+      ).toFixed(3);
+      selectedText.textContent = `Top hit · page ${ranked[0].page} · ${ranked[0].text}`;
+    }
+
+    fetch('./embedding-data.json')
+      .then(response => {
+        if (!response.ok) throw new Error('Generate embedding-data.json before opening this page.');
+        return response.json();
+      })
+      .then(data => {
+        payload = data;
+        data.queries.forEach((query, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = query;
+          button.setAttribute('aria-pressed', index === selectedQuery ? 'true' : 'false');
+          button.addEventListener('click', () => {
+            selectedQuery = index;
+            [...strip.children].forEach(
+              (item, itemIndex) => item.setAttribute('aria-pressed', itemIndex === index ? 'true' : 'false')
+            );
+            draw();
+          });
+          strip.appendChild(button);
+        });
+        draw();
+        plot.on('plotly_click', event => {
+          const item = event.points[0];
+          if (!item.customdata) return;
+          selectedText.textContent = `Selected · page ${item.customdata[0]} · cosine ${Number(item.customdata[2]).toFixed(3)} · ${item.customdata[1]}`;
+        });
+      })
+      .catch(error => {
+        plot.innerHTML = `<p class="error">${error.message}</p>`;
+      });
+  </script>
+</body>
+</html>
