@@ -1,13 +1,20 @@
 # Documentation
 
-The README is the short project introduction. These notes contain the detailed
-engineering design and should stay aligned with the implementation.
+The root README is the public project overview. These notes contain the details
+needed to understand, run, and extend the experiment.
 
-- [Retrieval pipeline](retrieval-pipeline.md): the currently implemented ingestion and search flow.
-- [Retrieval evaluation plan](retrieval-evaluation-plan.md): the planned model, chunking, lexical-baseline, benchmark, visualization, and refactor work.
-- [Next scope](../NEXT_STEPS.md): the longer-term local LLM experiment using no context, retrieved context, and oracle context.
+## Current system
 
-As the evaluation refactor is implemented, split stable material from the plan
-into focused notes for architecture, chunking, embedding models, evaluation,
-visualization, and local operation. Do not copy the same explanation into every
-file.
+- [Architecture](architecture.md) — current components, data flow, and boundaries
+- [Local workflow](local-workflow.md) — Docker setup and supported commands
+- [Ingestion](ingestion.md) — discovery, hashing, incremental updates, and clean rebuilds
+- [Retrieval pipeline](retrieval-pipeline.md) — indexing, search, reranking, and metadata mapping
+- [Visualization](visualization.md) — what the 3D explorer shows and what it cannot prove
+
+## Evaluation and direction
+
+- [Evaluation](evaluation.md) — retrieval and generation metrics, ground truth, and failure attribution
+- [Roadmap](roadmap.md) — the four project phases and their completion criteria
+- [Retrieval evaluation plan](retrieval-evaluation-plan.md) — detailed proposed 3 × 3 experiment matrix and refactor sequence
+- [Next checkpoint](../NEXT_STEPS.md) — the immediate implementation order
+- [Working task list](../todo.md) — concise engineering work log

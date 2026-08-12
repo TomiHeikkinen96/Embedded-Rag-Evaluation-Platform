@@ -4,7 +4,7 @@ This is the instruction file future coding agents should read first in this repo
 
 ## Project Idea
 
-This project is a local RAG ingestion and retrieval demo focused on embedded software work, using ESP32 documentation as the current source corpus.
+This project is a local context-engineering and evaluation harness for embedded software work, using ESP32 documentation as the current source corpus.
 
 The point of the repo is not just to "make search work." The repo exists to evaluate whether better hardware-grounded context leads to better AI-assisted engineering outcomes: better answers, fewer hallucinations, and more useful embedded-development support.
 
@@ -20,12 +20,13 @@ That means changes should favor:
 
 Keep the current module boundaries explicit and understandable:
 
-- `ingest.py` orchestrates discovery, change detection, chunking, embedding, SQLite updates, and FAISS rebuilds
-- `search_index.py` performs local query embedding, FAISS lookup, and result rendering
-- `chunkers/` owns chunking logic
-- `processing/` owns document loading and embedding concerns
-- `utils/db.py` owns SQLite access and schema helpers
-- `utils/hashing.py` owns file hashing
+- `scripts/ingest.py` orchestrates discovery, change detection, chunking, embedding, SQLite updates, and FAISS rebuilds
+- `scripts/search_index.py` performs local query embedding, FAISS lookup, and result rendering
+- `scripts/chunkers/` owns chunking logic
+- `scripts/processing/` owns document loading and embedding concerns
+- `scripts/utils/db.py` owns SQLite access and schema helpers
+- `scripts/utils/hashing.py` owns file hashing
+- root shell scripts expose the supported task-oriented Docker workflows
 
 The current implementation is intentionally local-first and intentionally simple. Do not add unnecessary abstraction, framework-style indirection, or premature generalization.
 

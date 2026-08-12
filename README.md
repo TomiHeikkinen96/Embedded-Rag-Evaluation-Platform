@@ -1,206 +1,119 @@
-# Local LLM and RAG Evaluation Harness for Embedded Engineering
+# RAGeval — Context Engineering for Embedded Software
 
-Local-first portfolio project for evaluating whether retrieval-augmented generation (RAG) makes local language models more accurate, grounded, and useful for embedded software engineering.
+Embedded development depends on information scattered across datasheets,
+reference manuals, SDK documentation, board behaviour, and team knowledge.
+Giving an AI coding agent access to those documents is easy; showing that it
+retrieves the right evidence and produces better engineering work is harder.
 
-The project is growing from a document retrieval demo into an inspectable AI evaluation harness: a system that runs controlled model experiments, records the complete execution configuration, and separates retrieval failures from model and context-use failures.
+RAGeval is a local-first experimental harness for measuring that difference.
+The current ESP32 corpus is used to study chunking, embeddings, retrieval, and
+evaluation before adding code generation and agentic workflows.
 
-The current corpus is ESP32 documentation. The planned benchmark will compare local models under three conditions: no retrieved context, context produced by the RAG pipeline, and known-good oracle context. This makes it possible to measure when RAG helps smaller models instead of merely demonstrating that a chatbot can search documents.
+The long-term question is whether an inspectable agent can make better embedded
+software changes when its harness supplies grounded context and checks results
+against software and hardware evidence.
 
-> **Project status:** the local ingestion and retrieval foundation is implemented. The immediate next phase is a labelled retrieval evaluation across embedding models, chunking strategies, and literal search before model answer evaluation is added. See the [retrieval evaluation plan](docs/retrieval-evaluation-plan.md) and [NEXT_STEPS.md](NEXT_STEPS.md).
+> **Current phase:** retrieval foundations and evaluation. PDF ingestion,
+> incremental FAISS indexing, SQLite metadata, local search, reranking, batch
+> queries, and a 3D embedding explorer are implemented. The labelled multi-model
+> and multi-chunker evaluation matrix is next.
 
-## Why This Exists
+## Project path
 
-This repo is a lightweight experimentation platform for evaluating local LLMs and context-building methods in embedded development workflows.
+```mermaid
+flowchart LR
+    P1A["1a · Retrieval foundation\nIngestion · indexing · explorer"]
+    P1B["1b · Retrieval evaluation\nChunkers · models · labelled metrics"]
+    P2["2 · Grounded generation\nNo context · retrieved · oracle"]
+    P3["3 · Hardware validation\nCompile · flash · tests · human review"]
+    P4["4 · Agentic harness\nPlan · use tools · observe · recover"]
 
-Questions this repo is trying to answer:
-- How should embedded reference material be ingested so it stays repeatable and inspectable?
-- How can ingestion reprocess only changed data instead of rebuilding everything?
-- How do chunking strategy, embedding model choice, and storage format affect retrieval quality?
-- Does retrieved hardware documentation improve answer correctness and reduce hallucinations?
-- Can a small local model with RAG outperform a larger model without domain context?
-- Did an unsuccessful answer fail because of retrieval, model capability, or poor context use?
-- How reproducibly can model, prompt, retrieval, latency, and scoring changes be compared?
+    P1A --> P1B --> P2 --> P3 --> P4
 
-## Planned Harness
-
-The intended harness will keep the experimental layers explicit:
-
-- a versioned engineering question set with reference facts and relevant source locations
-- interchangeable local model adapters, beginning with an OpenAI-compatible Ollama endpoint
-- controlled no-context, retrieved-context, and oracle-context runs
-- retrieval metrics such as Recall@k and MRR
-- answer-level correctness, grounding, citation, refusal, and latency measurements
-- durable experiment records containing prompts, settings, retrieved chunks, outputs, and scores
-- optional LangChain/LangGraph and LlamaIndex adapters for framework comparison
-- containerized local workflows for ingestion, search, and inspection
-
-LangChain, LangGraph, LlamaIndex, and eventually durable workflow orchestration are treated as technologies to evaluate or integrate where useful. The core benchmark remains framework-independent so that a framework change does not silently change the experiment itself.
-
-## Current Demo
-
-Right now this repo provides:
-- local PDF ingestion from `data/`
-- file-level change detection using hashes
-- deleted-file detection for removed source PDFs
-- chunk generation for PDFs
-- sentence-transformer embeddings
-- SQLite metadata storage
-- explicit index-build metadata and vector-to-chunk mapping in SQLite
-- FAISS vector indexing with durable vector ids
-- simple local search over indexed content
-- an interactive 3D embedding and retrieval visualization generated from the active index
-
-### Interactive embedding visualization
-
-With Colima running and an index already built, generate the current PCA projection
-and open the local visualization with:
-
-```bash
-./run_visualization.sh
+    classDef done fill:#d1fae5,stroke:#15803d,color:#14532d;
+    classDef current fill:#fef3c7,stroke:#d97706,color:#78350f;
+    classDef planned fill:#e5e7eb,stroke:#6b7280,color:#374151;
+    class P1A done;
+    class P1B current;
+    class P2,P3,P4 planned;
 ```
 
-The script rebuilds the Docker image when needed, reconstructs the indexed chunk
-vectors, embeds the queries in `benchmark_queries.txt`, and serves the visualization
-at `http://localhost:8000`. Pass a different port as the first argument if needed:
+- **Phase 1 — Context and retrieval:** compare chunking strategies, embedding
+  models, literal search, and dense retrieval against human-labelled evidence.
+- **Phase 2 — Grounded generation:** compare local and hosted coding models with
+  no context, retrieved context, and known-good oracle context.
+- **Phase 3 — Hardware validation:** evaluate outputs with deterministic checks
+  such as compilation and tests, then hardware behaviour and human review where
+  automation cannot establish correctness.
+- **Phase 4 — Agentic harness:** add planning, tools, memory, observation, and
+  recovery only after the underlying retrieval and generation stages are
+  measurable.
 
-```bash
-./run_visualization.sh 8080
+Green means implemented, amber means current work, and grey means planned. The
+roadmap is an experimental sequence, not a claim that the later stages exist.
+
+## Current architecture
+
+```mermaid
+flowchart LR
+    PDF["ESP32 PDFs"] --> LOAD["Load and clean"]
+    LOAD --> CHUNK["Sentence/table-aware chunks"]
+    CHUNK --> EMBED["Normalized embeddings"]
+    EMBED --> FAISS["FAISS vectors"]
+    CHUNK --> SQLITE["SQLite metadata"]
+    FAISS --> SEARCH["Retrieve and rerank"]
+    SQLITE --> SEARCH
+    SEARCH --> INSPECT["CLI benchmark and 3D explorer"]
 ```
 
-The rotatable plot is an explanatory three-dimensional PCA projection. Cosine
-similarities shown in the interface are calculated from the original 384-dimensional
-embedding vectors, not from distances in the projected view.
+The retrieval unit and display context are deliberately separate, and every
+FAISS vector id is mapped explicitly back to SQLite metadata. See
+[architecture](docs/architecture.md) and the current
+[retrieval pipeline](docs/retrieval-pipeline.md).
 
-The current implementation is intentionally local-first. Source data is processed locally for this demo and is not intended to be redistributed through the repository.
+## Run locally
 
-Current indexing tradeoff:
-- normal ingest runs update FAISS incrementally by removing and adding only the affected document vectors
-- `--force-rebuild` still clears storage and rebuilds the full active index from scratch
-- this is intentional for the current stage of the project
-
-Why keep it this way for now:
-- simple implementation
-- minimal moving parts
-- easier to reason about during experimentation
-- faster to iterate on ingestion logic and storage design
-
-What is explicit now:
-- each index build is recorded in SQLite
-- each FAISS `vector_id` is mapped to a durable `chunk_id`
-- search resolves FAISS hits through stored index metadata instead of relying on repeated row ordering
-- when a tracked PDF is removed from `data/`, its chunks and vectors are deleted from the active index state
-
-Current limitation:
-- vector ids are durable within the active index state, but `--force-rebuild` intentionally assigns a fresh index from scratch
-- larger corpora may still justify additional work such as embedding reuse across experimental rebuilds, richer index-version history, or more sophisticated update policies
-
-## Install
-
-### Docker (recommended when Python is not installed)
-
-The Docker workflow only requires Docker and a running Colima instance. It uses
-Python 3.12 inside the image and keeps source PDFs and generated indexes in the
-host's `data/` and `storage/` directories. The downloaded embedding model is
-kept in a Docker volume so it does not need to be downloaded for every run.
+Requires Docker. On macOS this project uses Colima.
 
 ```bash
 colima start
 docker compose build
+./ingest_data.sh
+./view_evaluation.sh
 ```
 
-Place PDFs anywhere under `./data/`, then ingest them:
+Useful commands:
 
 ```bash
-./run_docker.bash ingest.py
+# Incrementally process only changed source PDFs
+./ingest_data.sh
+
+# Confirm, clear generated storage, and rebuild
+./ingest_data.sh --clean
+
+# Run an individual Python tool in the container
+./run_script.sh search_index.py "maximum current"
+./run_script.sh benchmark_search.py --top-k 3
+./run_script.sh db_inspect.py stats
+
+# Regenerate and open the explorer on another port
+./view_evaluation.sh 8080
 ```
 
-The first ingestion or search downloads the embedding model. To rebuild the
-index from scratch, or run searches and inspection tools:
+Source PDFs belong in `data/`. Generated indexes, databases, model downloads,
+and visualization data remain local and are not committed.
 
-```bash
-./run_docker.bash ingest.py --force-rebuild
-./run_docker.bash search_index.py "maximum current" "ADC pins"
-./run_docker.bash db_inspect.py stats
-./run_docker.bash benchmark_search.py --file benchmark_queries.txt
-```
+## Documentation
 
-The wrapper passes all arguments after the Python filename directly to the
-container. Use `./run_docker.bash search_index.py` with no query for interactive
-search. Stop Colima when you are finished if you do not want its VM running:
+- [Documentation index](docs/README.md)
+- [Architecture and boundaries](docs/architecture.md)
+- [Local workflow and commands](docs/local-workflow.md)
+- [Ingestion and incremental updates](docs/ingestion.md)
+- [Retrieval pipeline](docs/retrieval-pipeline.md)
+- [Evaluation design](docs/evaluation.md)
+- [Embedding explorer](docs/visualization.md)
+- [Project roadmap](docs/roadmap.md)
+- [Detailed retrieval-evaluation plan](docs/retrieval-evaluation-plan.md)
 
-```bash
-colima stop
-```
-
-### Native Python
-
-Tested with:
-
-```bash
-python3 --version
-Python 3.12.3
-```
-
-If you use an older Python such as `3.10.x`, setup or runtime behavior may fail. For now, prefer Python `3.12`.
-
-```bash
-source ./setup_venv.sh
-```
-
-Note: This script targets Linux/macOS shells. On Windows, use WSL or create the virtual environment manually:
-
-```powershell
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-The script creates `.venv` if needed, activates it with the standard Ubuntu shell command `source .venv/bin/activate`, upgrades `pip`, and installs from `requirements.txt`. If you run `./setup_venv.sh` instead of `source ./setup_venv.sh`, setup still runs, but the virtual environment will not stay active in your current terminal after the script exits.
-
-If you have CUDA-enabled PyTorch already installed, the embedder will use GPU automatically.
-
-## Run
-
-Place PDFs anywhere under `./data/`, then run:
-
-```bash
-python ingest.py
-```
-
-To rebuild from scratch:
-
-```bash
-python ingest.py --force-rebuild
-```
-
-After ingesting documents:
-
-```bash
-python search_index.py
-```
-
-## Project Layout
-
-```text
-.
-├── ingest.py
-├── search_index.py
-├── data/
-├── storage/
-├── chunkers/
-├── processing/
-├── visualization/
-├── run_visualization.sh
-└── utils/
-```
-
-## Roadmap
-
-- Define a structured, versioned embedded-engineering benchmark dataset
-- Add a reusable retriever interface around the current FAISS and SQLite implementation
-- Add local model execution through a narrow provider adapter
-- Compare no-context, retrieved-context, and oracle-context answers
-- Persist complete experiment configurations and results for reproducible comparisons
-- Add deterministic retrieval and answer scoring before introducing LLM-as-judge metrics
-- Compare selected LangChain/LangGraph and LlamaIndex integrations without hiding the custom retrieval pipeline
-- Extend the containerized workflow as the evaluation harness grows, and consider distributed orchestration only when experiments require it
+The immediate implementation checkpoint is kept in [NEXT_STEPS.md](NEXT_STEPS.md),
+and the working engineering list is in [todo.md](todo.md).

@@ -133,21 +133,21 @@ What is still weak:
 Interactive or multi-query search:
 
 ```bash
-python3 search_index.py
-python3 search_index.py "maximum current" "ADC pins"
+./run_script.sh search_index.py
+./run_script.sh search_index.py "maximum current" "ADC pins"
 ```
 
 Batch benchmarking:
 
 ```bash
-python3 benchmark_search.py
-python3 benchmark_search.py --file benchmark_queries.txt
+./run_script.sh benchmark_search.py
+./run_script.sh benchmark_search.py --file benchmark_queries.txt
 ```
 
 Database inspection:
 
 ```bash
-python3 db_inspect.py stats
-python3 db_inspect.py index-status
-python3 db_inspect.py page-chunks --path-contains esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf --page 25
+./run_script.sh db_inspect.py stats
+./run_script.sh db_inspect.py index-status
+./run_script.sh db_inspect.py page-chunks --path-contains esp32-wroom-32u_datasheet_en.pdf --page 25
 ```
