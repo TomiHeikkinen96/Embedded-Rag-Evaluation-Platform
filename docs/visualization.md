@@ -1,4 +1,4 @@
-# Embedding Explorer
+# Evaluation Explorer
 
 Run:
 
@@ -24,9 +24,31 @@ unavailable:
 - original-space cosine similarity for the selected query
 - highlighted nearest chunks with source-page and text previews
 - dimensions, three-component explained variance, and score separation
+- golden-evidence MRR and Recall@1/3/5/10 with per-question failure inspection
+- a distractor-intrusion report comparing wrong-device ranks and counts,
+  target-corpus precision, gold-to-distractor score margins, and per-device confusion
 
 The view is useful for exploring broad neighbourhoods, outliers, noisy chunks,
 and benchmark coverage.
+
+The 3D explorer intentionally uses six representative questions: table lookup,
+pin lookup, conceptual explanation, memory-role paraphrase, errata diagnosis,
+and an unanswerable control. The complete labelled set remains in the golden
+comparison instead of becoming a crowded row of query buttons.
+
+## Distractor report definitions
+
+- **Mean first wrong rank** averages the rank of the first distractor for cases
+  where one appears in the top 10. The adjacent per-device table makes the
+  omitted no-intrusion cases visible through its counts.
+- **Wrong chunks @k** is the total number of distractor-role results across all
+  active benchmark questions, not a percentage.
+- **Target precision @k** is the share of returned result slots belonging to
+  any target-role ESP32 document. This measures source-family discrimination;
+  the golden view separately checks the exact document, page, and passage.
+- **Mean gold margin** is the first gold result's rerank score minus the
+  highest-ranked distractor score, averaged only over cases where both occur in
+  the top 10. Positive is desirable. The comparable-case count is shown beside it.
 
 ## What it does not prove
 

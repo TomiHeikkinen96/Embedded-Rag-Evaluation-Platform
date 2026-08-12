@@ -1,10 +1,12 @@
 # One query per line. Lines starting with # are ignored.
 
-maximum current
-ADC pins
-wifi current
-absolute maximum ratings
-flash voltage regulator
-gpio matrix
-deep sleep current
-pull-up resistor
+# A deliberately small, representative set for the 3D embedding explorer.
+# These are descriptive questions rather than the original search fragments so
+# the query embeddings reflect how the labelled benchmark is actually phrased.
+
+What current does the ESP32 typically consume in Wi-Fi transmit and receive modes?
+Which ESP32 pins are connected to ADC1 and ADC2 channels?
+What does the ESP32 GPIO matrix do?
+How do RTC FAST Memory and RTC SLOW Memory differ in their intended use?
+Why can slow flash startup cause an ESP32 watchdog reset?
+Which ESP32 GPIO pins provide the native USB D+ and D- interface?

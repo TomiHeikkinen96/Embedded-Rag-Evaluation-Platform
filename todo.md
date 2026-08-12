@@ -36,6 +36,8 @@ detail belongs in `docs/`; completed history remains available in Git.
 - [ ] Add latency, chunk count, and index-size views. Per-question reciprocal
   rank and aggregate MRR/Recall@k are implemented in the golden comparison.
 - [ ] Add expected-evidence versus retrieved-result failure inspection.
+- [x] Add wrong-device distractor reporting: first intrusion rank, top-k counts,
+  target precision, gold-score margin, and per-device confusion.
 
 ## Environment and performance
 
@@ -99,6 +101,10 @@ detail belongs in `docs/`; completed history remains available in Git.
   wrong-device distractors. The corpus now has 30,959 chunks: 14,353 ESP32
   target chunks and 16,606 distractor chunks. ESP32 golden labels remain the
   correct scope; separate labels would be needed only for a multi-device task.
+- 2026-08-12: Replaced the eight terse legacy PCA queries with six representative
+  benchmark-style questions and added a third GUI view for distractor intrusion.
+  Counts report corpus noise directly; exact evidence correctness remains in the
+  separate golden comparison.
 - 2026-08-12: Native MPS ingestion completed MiniLM and BGE over 14,353 chunks,
   then Jina's remote custom model code caused a process-level segmentation fault
   during model initialization. Replaced it with standard-BERT Arctic Embed M

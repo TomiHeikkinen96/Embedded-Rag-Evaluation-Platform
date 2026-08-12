@@ -50,6 +50,16 @@
     .legend i { border-radius: 50%; display: inline-block; height: 9px; margin-right: 5px; width: 9px; }
     .legend .hit { background: #2ca66f; } .legend .near { background: #d39728; } .legend .miss { background: light-dark(#c8ced9, #465061); }
     .error { background: #842029; border-radius: 8px; color: white; padding: 14px; }
+    .report-table-wrap { border: 1px solid light-dark(#dce1e9, #343b48); border-radius: 12px; margin: 18px 0; overflow-x: auto; }
+    .report-table { border-collapse: collapse; min-width: 760px; width: 100%; }
+    .report-table th, .report-table td { border-bottom: 1px solid light-dark(#dce1e9, #343b48); padding: 11px 13px; text-align: right; }
+    .report-table th { color: light-dark(#586174, #aeb7c6); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+    .report-table th:first-child, .report-table td:first-child { text-align: left; }
+    .report-table tbody tr:last-child td { border-bottom: 0; }
+    .report-table tbody tr[data-selected="true"] { background: light-dark(#eeeaff, #29233f); }
+    .report-table button { background: none; border: 0; border-radius: 0; font: inherit; font-weight: 750; padding: 0; text-align: left; }
+    .report-heading { font-size: 17px; margin: 22px 0 7px; }
+    .report-caption { color: light-dark(#586174, #aeb7c6); font-size: 13px; margin: 0; }
   </style>
 </head>
 <body>
@@ -81,6 +91,15 @@
       <div class="legend" aria-label="Result labels"><span><i class="hit"></i>gold evidence</span><span><i class="near"></i>correct page, wrong passage</span><span><i class="miss"></i>other source</span></div>
       <div class="case-list"></div>
     </section>
+    <section id="distractor-view" class="view-panel" hidden>
+      <h2 class="report-heading">Wrong-device intrusion</h2>
+      <p class="report-caption">Lower intrusion counts are better; higher target precision and gold-minus-distractor margin are better.</p>
+      <div class="report-table-wrap"><table class="report-table intrusion-table"></table></div>
+      <h2 class="report-heading">Per-device confusion</h2>
+      <p class="report-caption confusion-caption"></p>
+      <div class="report-table-wrap"><table class="report-table confusion-table"></table></div>
+      <p class="gold-definition distractor-definition"></p>
+    </section>
   </main>
   <script>
     const plot = document.getElementById('embedding-plot');
@@ -95,7 +114,8 @@
 
     const views = [
       { id: 'embedding-view', label: 'Embedding explorer' },
-      { id: 'golden-view', label: 'Golden comparison' }
+      { id: 'golden-view', label: 'Golden comparison' },
+      { id: 'distractor-view', label: 'Distractor intrusion' }
     ];
 
     function setupViews() {
@@ -242,10 +262,42 @@
           selectedGoldenModel = index;
           [...goldenStrip.children].forEach((item, itemIndex) => item.setAttribute('aria-pressed', itemIndex === index ? 'true' : 'false'));
           renderGoldenModel();
+          renderDistractorReport();
         });
         goldenStrip.appendChild(button);
       });
       renderGoldenModel();
+      renderDistractorReport();
+    }
+
+    function metricAt(values, depth, formatter = String) {
+      return formatter(values[String(depth)] ?? 0);
+    }
+
+    function renderDistractorReport() {
+      if (!goldenPayload) return;
+      const availableModels = goldenPayload.models
+        .map((model, index) => ({ model, index }))
+        .filter(item => item.model.available);
+      const table = document.querySelector('.intrusion-table');
+      table.innerHTML = `<thead><tr><th>Model</th><th>Mean first wrong rank</th><th>Wrong chunks @1 / 3 / 5 / 10</th><th>Target precision @1 / 3 / 5 / 10</th><th>Mean gold margin</th></tr></thead><tbody>${availableModels.map(({ model, index }) => {
+        const metrics = model.distractor_metrics;
+        const wrong = [1, 3, 5, 10].map(depth => metricAt(metrics.wrong_device_counts, depth)).join(' / ');
+        const precision = [1, 3, 5, 10].map(depth => metricAt(metrics.target_precision_at_k, depth, percent)).join(' / ');
+        const firstRank = metrics.mean_first_distractor_rank === null ? 'none in top 10' : metrics.mean_first_distractor_rank.toFixed(2);
+        const margin = metrics.mean_gold_distractor_margin === null ? 'n/a' : metrics.mean_gold_distractor_margin.toFixed(3);
+        return `<tr data-selected="${index === selectedGoldenModel}"><td><button type="button" data-model-index="${index}">${escapeHtml(model.display_name)}</button></td><td>${firstRank}<br><span class="case-meta">${metrics.cases_with_distractor_at_10}/${metrics.case_count} cases</span></td><td>${wrong}</td><td>${precision}</td><td>${margin}<br><span class="case-meta">${metrics.margin_case_count} comparable cases</span></td></tr>`;
+      }).join('')}</tbody>`;
+      table.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
+        selectedGoldenModel = Number(button.dataset.modelIndex);
+        renderDistractorReport();
+      }));
+
+      const model = goldenPayload.models[selectedGoldenModel];
+      const metrics = model.distractor_metrics;
+      document.querySelector('.confusion-caption').textContent = `${model.display_name} · total wrong-device chunks retrieved across ${metrics.case_count} questions.`;
+      document.querySelector('.confusion-table').innerHTML = `<thead><tr><th>Distractor device</th><th>Top 1</th><th>Top 3</th><th>Top 5</th><th>Top 10</th></tr></thead><tbody>${metrics.per_device_confusion.map(device => `<tr><td>${escapeHtml(device.title)}</td>${[1, 3, 5, 10].map(depth => `<td>${metricAt(device.counts, depth)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+      document.querySelector('.distractor-definition').textContent = goldenPayload.distractor_definition;
     }
 
     setupViews();
