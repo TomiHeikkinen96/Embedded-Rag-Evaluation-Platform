@@ -2,6 +2,17 @@
 
 This note records the intended next phase of the project so the scope change remains visible between development sessions. It is a design direction, not a claim that every component below is already implemented.
 
+## Immediate Priority: Retrieval Evaluation Matrix
+
+Before adding local model answer generation, the project will first measure the
+retrieval foundation across three embedding-model roles, three chunking
+strategies, and a literal-search baseline. This makes later answer experiments
+easier to interpret because retrieval failures will already be measurable.
+
+See [docs/retrieval-evaluation-plan.md](docs/retrieval-evaluation-plan.md) for the
+experiment matrix, ground-truth design, modular architecture, visualization
+direction, and staged refactor plan.
+
 ## Goal
 
 Build a local-first evaluation harness that measures whether retrieval-augmented context improves local LLM performance on embedded-engineering questions.

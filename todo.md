@@ -13,6 +13,18 @@ Agents should update this file when priorities become clearer, when work is comp
 
 ## Scope: Local LLM Evaluation Harness
 
+- [x] Define the retrieval-evaluation matrix and staged refactor direction.
+  Notes:
+  `docs/retrieval-evaluation-plan.md` records the proposed three-model and three-chunker matrix, literal baseline, labelled benchmark, ranking metrics, multi-index storage identities, CLI, visualization controls, and documentation split.
+  Key decision:
+  LangChain should initially contribute only `RecursiveCharacterTextSplitter`; all chunkers continue through the same SQLite and FAISS implementation so chunking remains the variable under test.
+
+- [ ] Implement the retrieval-evaluation plan one phase at a time.
+  First checkpoint:
+  Define stable source-evidence labels and capture the current custom-chunker/MiniLM behaviour before changing schemas or index layout.
+  Guardrail:
+  Do not build nine duplicated ingestion paths. Model, chunker, and retriever choices should be registered configurations in one pipeline.
+
 - [x] Reframe the planned direction from an external agent search tool to a local LLM and RAG evaluation harness.
   Notes:
   The existing ingestion and retrieval pipeline remains the foundation. The next phase will compare local model answers with no context, retrieved context, and manually verified oracle context.

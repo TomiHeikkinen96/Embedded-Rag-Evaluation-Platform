@@ -6,7 +6,7 @@ The project is growing from a document retrieval demo into an inspectable AI eva
 
 The current corpus is ESP32 documentation. The planned benchmark will compare local models under three conditions: no retrieved context, context produced by the RAG pipeline, and known-good oracle context. This makes it possible to measure when RAG helps smaller models instead of merely demonstrating that a chatbot can search documents.
 
-> **Project status:** the local ingestion and retrieval foundation is implemented. Model execution, answer evaluation, and experiment tracking are the next major workstream. See [NEXT_STEPS.md](NEXT_STEPS.md) for the planned harness design.
+> **Project status:** the local ingestion and retrieval foundation is implemented. The immediate next phase is a labelled retrieval evaluation across embedding models, chunking strategies, and literal search before model answer evaluation is added. See the [retrieval evaluation plan](docs/retrieval-evaluation-plan.md) and [NEXT_STEPS.md](NEXT_STEPS.md).
 
 ## Why This Exists
 
