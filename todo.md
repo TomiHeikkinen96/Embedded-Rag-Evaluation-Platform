@@ -23,7 +23,8 @@ detail belongs in `docs/`; completed history remains available in Git.
 - [x] Support several FAISS indexes without overwriting one active state.
 - [ ] Add raw 500-character chunking.
 - [ ] Add LangChain's standalone recursive-character splitter.
-- [x] Add BGE medium and Jina code embedding candidates with local compatibility checks.
+- [x] Add BGE and Arctic medium retrieval candidates; replace Jina after its
+  custom model code crashed under native macOS MPS initialization.
 - [ ] Add transparent literal retrieval and zero-result reporting.
 - [ ] Compare the complete matrix using the same labelled benchmark and top-k budget.
 
@@ -41,6 +42,11 @@ detail belongs in `docs/`; completed history remains available in Git.
 - [ ] Test whether native macOS PyTorch MPS accelerates ingestion compared with
   the Docker/Colima CPU path. Verify all three models, output equivalence,
   memory use, and whether the extra host workflow is worth maintaining.
+- [x] Add an optional native macOS ingestion wrapper with an isolated Python
+  3.12 environment and explicit MPS availability check.
+- [ ] Consider `text-embedding-3-large` as an optional hosted retrieval
+  baseline after the local labelled baseline is recorded. Keep API cost,
+  privacy, rate limits, and weaker snapshot reproducibility explicit.
 
 ## Later phases
 

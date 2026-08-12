@@ -7,7 +7,7 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_DIR"
 
 if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
-    echo "Usage: ./ingest_data.sh [--model mini|bge|technical|all] [--clean] [--yes]"
+    echo "Usage: ./ingest_data.sh [--model mini|bge|arctic|all] [--clean] [--yes]"
     echo
     echo "Without options, source changes are processed and all missing model indexes are built."
     echo "--model selects one registered embedding model; all is the default."

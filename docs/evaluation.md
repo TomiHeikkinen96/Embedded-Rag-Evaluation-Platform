@@ -24,7 +24,8 @@ models.
 The first comparison matrix will vary:
 
 - chunking: custom, recursive-character baseline, and raw 500-character windows
-- embeddings: small general, medium retrieval, and technical/code-biased models
+- embeddings: small general and two medium retrieval models with different
+  training approaches
 - retrieval: dense cosine and literal search, with hybrid retrieval considered later
 
 See the [detailed plan](retrieval-evaluation-plan.md).

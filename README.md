@@ -59,7 +59,7 @@ roadmap is an experimental sequence, not a claim that the later stages exist.
 flowchart LR
     PDF["ESP32 PDFs"] --> LOAD["Load and clean"]
     LOAD --> CHUNK["Sentence/table-aware chunks"]
-    CHUNK --> EMBED["MiniLM · BGE · Jina code"]
+    CHUNK --> EMBED["MiniLM · BGE · Arctic Embed"]
     EMBED --> FAISS["One FAISS index per model"]
     CHUNK --> SQLITE["SQLite metadata"]
     FAISS --> SEARCH["Retrieve and rerank"]
@@ -74,7 +74,7 @@ FAISS vector id is mapped explicitly back to SQLite metadata. See
 
 ## Run locally
 
-Requires Docker. On macOS this project uses Colima.
+The portable workflow uses Docker. On macOS this project uses Colima:
 
 ```bash
 colima start
@@ -82,6 +82,18 @@ docker compose build
 ./ingest_data.sh
 ./view_evaluation.sh
 ```
+
+Apple Silicon macOS can alternatively run ingestion natively on the GPU. After
+installing the matching Python version, the wrapper creates an isolated `.venv`
+and installs the existing pinned requirements on its first run:
+
+```bash
+brew install python@3.12
+./local_ingest_data.sh
+```
+
+The native wrapper accepts the same ingestion options as `ingest_data.sh`.
+Docker remains the supported path for the other tools.
 
 Useful commands:
 

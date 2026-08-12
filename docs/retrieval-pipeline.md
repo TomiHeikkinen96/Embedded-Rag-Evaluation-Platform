@@ -138,7 +138,7 @@ Interactive or multi-query search:
 ```bash
 ./run_script.sh search_index.py
 ./run_script.sh search_index.py "maximum current" "ADC pins"
-./run_script.sh search_index.py --model technical "gpio matrix"
+./run_script.sh search_index.py --model arctic "gpio matrix"
 ```
 
 Batch benchmarking:
@@ -154,6 +154,6 @@ Database inspection:
 ```bash
 ./run_script.sh db_inspect.py stats
 ./run_script.sh db_inspect.py index-status
-./run_script.sh db_inspect.py --model technical index-integrity
+./run_script.sh db_inspect.py --model arctic index-integrity
 ./run_script.sh db_inspect.py page-chunks --path-contains esp32-wroom-32u_datasheet_en.pdf --page 25
 ```

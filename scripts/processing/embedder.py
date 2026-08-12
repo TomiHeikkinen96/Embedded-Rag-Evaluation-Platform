@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import warnings
 from typing import Iterable
 
@@ -44,7 +45,7 @@ class TextEmbedder:
         load_dotenv(PROJECT_ROOT / ".env")
         self.config = config
         self.model_name = config.model_id
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self._resolve_device()
 
         original_modeling_utils_report = getattr(
             modeling_utils, "log_state_dict_report", None
@@ -95,6 +96,27 @@ class TextEmbedder:
                 modeling_utils.log_state_dict_report = original_modeling_utils_report
             if loading_report is not None and original_loading_report is not None:
                 loading_report.log_state_dict_report = original_loading_report
+
+    @staticmethod
+    def _resolve_device() -> str:
+        requested_device = os.environ.get("RAGEVAL_DEVICE", "auto").lower()
+        if requested_device not in {"auto", "cpu", "cuda", "mps"}:
+            raise ValueError(
+                "RAGEVAL_DEVICE must be one of: auto, cpu, cuda, mps"
+            )
+
+        if requested_device == "cuda" and not torch.cuda.is_available():
+            raise RuntimeError("CUDA was requested but is not available.")
+        if requested_device == "mps" and not torch.backends.mps.is_available():
+            raise RuntimeError("Apple MPS was requested but is not available.")
+        if requested_device != "auto":
+            return requested_device
+
+        if torch.cuda.is_available():
+            return "cuda"
+        if torch.backends.mps.is_available():
+            return "mps"
+        return "cpu"
 
     def get_embedding_dimension(self) -> int:
         return int(self.model.get_embedding_dimension())

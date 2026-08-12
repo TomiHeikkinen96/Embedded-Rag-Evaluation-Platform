@@ -18,7 +18,7 @@ unavailable:
 ## What it shows
 
 - corpus chunk embeddings and benchmark-query embeddings
-- large MiniLM, BGE, and Jina code model selectors
+- large MiniLM, BGE, and Arctic Embed model selectors
 - one question selection that persists while switching models
 - a rotatable three-dimensional PCA projection
 - original-space cosine similarity for the selected query

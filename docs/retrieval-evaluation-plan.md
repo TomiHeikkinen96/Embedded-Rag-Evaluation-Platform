@@ -1,7 +1,7 @@
 # Retrieval Evaluation Plan
 
-Status: active Phase 1 work. The custom chunker builds MiniLM, BGE, and Jina
-code indexes and the explorer compares them. Labelled metrics, alternate
+Status: active Phase 1 work. The custom chunker builds MiniLM, BGE, and Arctic
+Embed indexes and the explorer compares them. Labelled metrics, alternate
 chunkers, and literal retrieval remain planned.
 
 ## Question
@@ -22,14 +22,14 @@ The experiment will test these assumptions rather than build around them:
   datasheet table context.
 - A medium retrieval model improves ranking enough to justify its cost over the
   small baseline.
-- A technical/code-biased model handles identifiers and engineering language
-  better, but may be weaker on ordinary prose.
+- A newer retrieval-focused model handles difficult engineering-language
+  distinctions better than the established retrieval baseline.
 - Literal search is competitive for exact identifiers but cannot bridge many
   paraphrases.
 - Dense and literal retrieval may eventually work best as a hybrid.
 
 Negative findings are valid results. In particular, the custom chunker and the
-technical model are not assumed winners.
+larger or newer model is not assumed to win.
 
 ## Experiment matrix
 
@@ -39,22 +39,23 @@ technical model are not assumed winners.
 | --- | --- | --- |
 | `mini` | `sentence-transformers/all-MiniLM-L6-v2` | Fast 384-dimensional general baseline and current behaviour |
 | `bge` | `BAAI/bge-base-en-v1.5` | Medium 768-dimensional retrieval model |
-| `technical` | `jinaai/jina-embeddings-v2-base-code` | Technical/code-biased 768-dimensional candidate |
+| `arctic` | `Snowflake/snowflake-arctic-embed-m-v1.5` | Retrieval-focused 768-dimensional candidate with hard-negative training |
 
 Store the complete model id, pinned revision, dimensionality, normalization,
-maximum input length, and query/document prefix policy. The technical candidate
-uses remote model code. It is compatible with the current Transformers 4.57.6
-pin; its remote model revision still needs an explicit immutable pin.
+maximum input length, and query/document prefix policy. All three local
+candidates use standard Sentence Transformers loading without remote model
+code. Their model revisions still need explicit immutable pins before recording
+the final baseline.
 
-Before accepting any new model on the CPU-only Apple Silicon environment,
-measure model loading, memory, embedding throughput, query latency, and artifact
-size.
+Before accepting any new model on the Apple Silicon environment, measure MPS
+compatibility, model loading, memory, embedding throughput, query latency, and
+artifact size. Docker remains the CPU comparison path.
 
 Primary model references:
 
 - [MiniLM model card](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
 - [BGE base v1.5 model card](https://huggingface.co/BAAI/bge-base-en-v1.5)
-- [Jina code embeddings model card](https://huggingface.co/jinaai/jina-embeddings-v2-base-code)
+- [Arctic Embed M v1.5 model card](https://huggingface.co/Snowflake/snowflake-arctic-embed-m-v1.5)
 
 ### Chunking strategies
 
@@ -187,7 +188,7 @@ Example artifact paths:
 ```text
 storage/indexes/custom/mini.faiss
 storage/indexes/custom/bge.faiss
-storage/indexes/raw500/technical.faiss
+storage/indexes/raw500/arctic.faiss
 ```
 
 SQLite remains the inspectable metadata layer. Using a LangChain splitter does

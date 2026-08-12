@@ -28,12 +28,12 @@ EMBEDDING_MODELS = {
         role="Medium retrieval model",
         query_prefix="Represent this sentence for searching relevant passages: ",
     ),
-    "technical": EmbeddingModelConfig(
-        alias="technical",
-        model_id="jinaai/jina-embeddings-v2-base-code",
-        display_name="Jina embeddings v2 code",
-        role="Technical and code-biased candidate",
-        trust_remote_code=True,
+    "arctic": EmbeddingModelConfig(
+        alias="arctic",
+        model_id="Snowflake/snowflake-arctic-embed-m-v1.5",
+        display_name="Arctic Embed M v1.5",
+        role="Retrieval-focused medium candidate",
+        query_prefix="Represent this sentence for searching relevant passages: ",
     ),
 }
 
