@@ -26,10 +26,11 @@ Completion target:
 
 ## Phase 2 — Grounded generation evaluation
 
-Status: planned.
+Status: next thin implementation slice.
 
-- compare no-context, retrieved-context, and oracle-context conditions
-- compare a practical local coding model with selected hosted APIs
+- establish Qwen 3.5 9B through the reproducible Ollama Modelfile
+- compare closed-book, bounded grep-agent, dense-RAG, and oracle-context conditions
+- begin with boolean, exact-value, identifier, and unanswerable questions
 - record prompts, model versions, settings, context, output, latency, and failures
 - score required facts, unsupported claims, citations, and refusal behaviour
 
@@ -54,7 +55,7 @@ behaviour rather than text similarity alone.
 Status: exploratory.
 
 - expose retrieval, build, test, and observation as explicit tools
-- add planning and bounded iteration
+- add planning and bounded iteration beyond the initial one-tool grep condition
 - persist traces and failure states
 - test recovery after failed builds or incorrect assumptions
 - compare a transparent custom loop with selected framework implementations

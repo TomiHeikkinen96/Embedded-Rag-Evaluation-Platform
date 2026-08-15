@@ -42,11 +42,12 @@ Negative cases and failures remain visible in reports.
 
 ## Grounded generation — planned
 
-Each engineering question will later be run under comparable context conditions:
+Each engineering question will be run under comparable evidence-access conditions:
 
 1. no external context
-2. retrieved context
-3. manually verified oracle context
+2. a bounded literal-search (`grep`) tool
+3. retrieved context supplied by the dense RAG pipeline
+4. manually verified oracle context
 
 This separates three failure modes:
 
@@ -57,6 +58,17 @@ This separates three failure modes:
 Candidate generation systems may include a locally runnable coding model and
 hosted APIs. They should share benchmark cases and recorded configuration rather
 than being compared through hand-picked demonstrations.
+
+The first local baseline is the checked-in Qwen 3.5 9B
+[`Modelfile`](../Modelfile). Initial tasks should be boolean capability checks,
+exact-value extraction, exact identifiers, and unanswerable controls. These
+permit deterministic scoring of normalized answers, abstention, evidence use,
+and unsupported claims before code generation or LLM judging is introduced.
+
+The model remains identical across conditions. The harness—not the Modelfile—
+controls whether it receives no evidence, may call a grep tool, receives dense
+retrieval results, or receives oracle evidence. See the
+[local model workflow](local-model.md).
 
 ## Validation ladder — planned
 

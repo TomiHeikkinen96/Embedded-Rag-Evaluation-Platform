@@ -13,11 +13,11 @@ The long-term question is whether an inspectable agent can make better embedded
 software changes when its harness supplies grounded context and checks results
 against software and hardware evidence.
 
-> **Current phase:** retrieval foundations and evaluation. PDF ingestion,
+> **Current phase:** retrieval evaluation plus a thin grounded-generation slice. PDF ingestion,
 > hash-based chunk ingestion, three model-specific FAISS indexes, SQLite
-> metadata, local search, reranking, batch queries, and a switchable 3D
-> embedding explorer are implemented. The labelled benchmark and multi-chunker
-> comparison are next.
+> metadata, local search, reranking, a labelled benchmark, and a switchable 3D
+> embedding explorer are implemented. Qwen 3.5 9B is selected as the first
+> local generation baseline; the generation runner is not yet implemented.
 
 ## Project path
 
@@ -42,7 +42,7 @@ flowchart LR
 - **Phase 1 — Context and retrieval:** compare chunking strategies, embedding
   models, literal search, and dense retrieval against human-labelled evidence.
 - **Phase 2 — Grounded generation:** compare local and hosted coding models with
-  no context, retrieved context, and known-good oracle context.
+  no context, bounded grep access, retrieved context, and known-good oracle context.
 - **Phase 3 — Hardware validation:** evaluate outputs with deterministic checks
   such as compilation and tests, then hardware behaviour and human review where
   automation cannot establish correctness.
@@ -95,6 +95,10 @@ brew install python@3.12
 The native wrapper accepts the same ingestion options as `ingest_data.sh`.
 Docker remains the supported path for the other tools.
 
+The first local generation model runs natively through Ollama. Installation,
+model creation, and the four-condition experiment are described in the
+[local model workflow](docs/local-model.md).
+
 Useful commands:
 
 ```bash
@@ -128,6 +132,7 @@ and visualization data remain local and are not committed.
 - [Ingestion and incremental updates](docs/ingestion.md)
 - [Retrieval pipeline](docs/retrieval-pipeline.md)
 - [Evaluation design](docs/evaluation.md)
+- [Local Ollama model and generation baseline](docs/local-model.md)
 - [Embedding explorer](docs/visualization.md)
 - [Project roadmap](docs/roadmap.md)
 - [Detailed retrieval-evaluation plan](docs/retrieval-evaluation-plan.md)

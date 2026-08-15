@@ -14,6 +14,7 @@ needed to understand, run, and extend the experiment.
 ## Evaluation and direction
 
 - [Evaluation](evaluation.md) — retrieval and generation metrics, ground truth, and failure attribution
+- [Local model](local-model.md) — Ollama setup, Modelfile, and generation conditions
 - [Roadmap](roadmap.md) — the four project phases and their completion criteria
 - [Retrieval evaluation plan](retrieval-evaluation-plan.md) — detailed proposed 3 × 3 experiment matrix and refactor sequence
 - [Next checkpoint](../NEXT_STEPS.md) — the immediate implementation order

@@ -52,10 +52,15 @@ detail belongs in `docs/`; completed history remains available in Git.
 
 ## Later phases
 
-- [ ] Add no-context, retrieved-context, and oracle-context generation runs.
+- [x] Select Qwen 3.5 9B and add a reproducible local Ollama Modelfile.
+- [ ] Add closed-book, bounded grep-agent, dense-RAG, and oracle-context
+  generation runs using the same model and questions.
+- [ ] Add typed boolean, exact-value, identifier, and unanswerable generation
+  cases with deterministic answer normalization.
 - [ ] Add deterministic answer and compilation checks before LLM judging.
 - [ ] Define at least one hardware-observable embedded benchmark task.
-- [ ] Add agentic planning/tools only after retrieval and generation are measurable.
+- [ ] Add broader agentic planning and tools only after the bounded grep and
+  supplied-context generation conditions are measurable.
 
 ## Completed foundation
 
@@ -109,3 +114,7 @@ detail belongs in `docs/`; completed history remains available in Git.
   then Jina's remote custom model code caused a process-level segmentation fault
   during model initialization. Replaced it with standard-BERT Arctic Embed M
   v1.5 so the three-model baseline remains repeatable on Apple Silicon.
+- 2026-08-15: Selected Qwen 3.5 9B as the cheap local generation baseline and
+  defined four evidence-access conditions: closed-book, bounded grep agent,
+  dense RAG, and oracle context. Retrieval and tool access remain harness
+  concerns so every condition can use the same model definition.
