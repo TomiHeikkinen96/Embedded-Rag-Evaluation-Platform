@@ -1,0 +1,113 @@
+{
+  "benchmark_id": "esp32-generation-v1",
+  "source_benchmark_id": "esp32-retrieval-v1",
+  "cases": [
+    {
+      "id": "flash-voltage-regulator",
+      "question": "What voltage and maximum output current can the ESP32 built-in flash voltage regulator supply?",
+      "task_type": "exact_value",
+      "answerability": "answerable",
+      "required_facts": [
+        {"name": "3.3 V option", "accepted": ["3.3 V", "3.3V"]},
+        {"name": "1.8 V option", "accepted": ["1.8 V", "1.8V"]},
+        {"name": "40 mA maximum", "accepted": ["40 mA", "40mA", "40 milliamps", "40 milliamperes"]}
+      ],
+      "oracle_sources": [
+        {
+          "title": "ESP32 Technical Reference Manual",
+          "source_path": "data/esp32_technical_reference_manual_en.pdf",
+          "page_number": 183,
+          "text": "The built-in flash voltage regulator can supply a voltage of 3.3 V or 1.8 V to other devices in the system, with a maximum output current of 40 mA."
+        }
+      ]
+    },
+    {
+      "id": "deep-sleep-current",
+      "question": "What deep-sleep power consumption does the ESP32 Series Datasheet state?",
+      "task_type": "exact_value",
+      "answerability": "answerable",
+      "required_facts": [
+        {"name": "10 microamps", "accepted": ["10 µA", "10 μA", "10 uA", "10 microamps", "10 microamperes"]}
+      ],
+      "oracle_sources": [
+        {
+          "title": "ESP32 Series Datasheet",
+          "source_path": "data/esp32_datasheet_en.pdf",
+          "page_number": 5,
+          "text": "Power consumption in Deep-sleep mode is 10 µA."
+        }
+      ]
+    },
+    {
+      "id": "single-supply-recommendation",
+      "question": "For a single-supply ESP32 design, what supply voltage and output-current capability are recommended?",
+      "task_type": "multi_value",
+      "answerability": "answerable",
+      "required_facts": [
+        {"name": "3.3 V supply", "accepted": ["3.3 V", "3.3V"]},
+        {"name": "500 mA or more", "accepted": ["500 mA or more", "at least 500 mA", "500mA or more", "500 milliamps or more"]}
+      ],
+      "oracle_sources": [
+        {
+          "title": "ESP32 Series Datasheet",
+          "source_path": "data/esp32_datasheet_en.pdf",
+          "page_number": 19,
+          "text": "When using a single-power supply, the recommended voltage of the power supply is 3.3 V, and its recommended output current is 500 mA or more."
+        }
+      ]
+    },
+    {
+      "id": "input-only-gpio-limitations",
+      "question": "Which ESP32 GPIO pins are input-only, and what output or pull-resistor features do they lack?",
+      "task_type": "identifier",
+      "answerability": "answerable",
+      "required_facts": [
+        {"name": "GPIO34 through GPIO39", "accepted": ["GPIO34 through GPIO39", "GPIO34-GPIO39", "GPIO pins 34-39", "GPIO 34 through 39"]},
+        {"name": "no output driver", "accepted": ["no output driver", "do not feature an output driver", "lack an output driver"]},
+        {"name": "no internal pull resistors", "accepted": ["no internal pull-up/pull-down", "no internal pull-up or pull-down", "lack internal pull-up and pull-down"]}
+      ],
+      "oracle_sources": [
+        {
+          "title": "ESP32 Series Datasheet",
+          "source_path": "data/esp32_datasheet_en.pdf",
+          "page_number": 61,
+          "text": "GPIO pins 34-39 are input-only. These pins do not feature an output driver or internal pull-up/pull-down circuitry."
+        }
+      ]
+    },
+    {
+      "id": "uart-controller-count-and-shared-ram",
+      "question": "How many UART controllers does ESP32 provide, and how much RAM do their transmit and receive FIFOs share?",
+      "task_type": "multi_fact",
+      "answerability": "answerable",
+      "required_facts": [
+        {"name": "three UART controllers", "accepted": ["three UART controllers", "3 UART controllers", "UART0, UART1, and UART2", "UART0 through UART2"]},
+        {"name": "1024 x 8-bit shared RAM", "accepted": ["1024 × 8-bit RAM", "1024 x 8-bit RAM", "1024-byte RAM", "1024 bytes of RAM"]}
+      ],
+      "oracle_sources": [
+        {
+          "title": "ESP32 Technical Reference Manual",
+          "source_path": "data/esp32_technical_reference_manual_en.pdf",
+          "page_number": 311,
+          "text": "The three UART controllers are UART0, UART1, and UART2. Their main features include 1024 × 8-bit RAM shared by three UART transmit-FIFOs and receive-FIFOs."
+        }
+      ]
+    },
+    {
+      "id": "native-usb-data-pins",
+      "question": "Which ESP32 GPIO pins provide the native USB D+ and D- interface?",
+      "task_type": "unanswerable",
+      "answerability": "unanswerable",
+      "required_facts": [],
+      "oracle_sources": []
+    },
+    {
+      "id": "out-of-domain-cookie-recipe",
+      "question": "Can you give me a cookie recipe?",
+      "task_type": "out_of_domain",
+      "answerability": "unanswerable",
+      "required_facts": [],
+      "oracle_sources": []
+    }
+  ]
+}

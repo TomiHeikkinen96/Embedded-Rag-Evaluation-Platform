@@ -1,0 +1,14 @@
+{
+  "experiment_id": "esp32-generation-v1-baseline",
+  "benchmark_id": "esp32-generation-v1",
+  "model": "rageval-qwen",
+  "prompt_version": "generation-baseline-zero-shot-v1",
+  "conditions": [
+    "closed_book",
+    "oracle",
+    "dense_rag:arctic"
+  ],
+  "top_k": 3,
+  "repetitions": 1,
+  "timeout_seconds": 300
+}

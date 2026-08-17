@@ -75,9 +75,29 @@ inspection options are:
 ./ask_question.sh --embedding bge "question"
 ```
 
-This is the interactive dense-RAG path, not yet the canonical evaluation runner.
-Its default generation and retrieval choices are deliberately fixed to
-`rageval-qwen` and `arctic`.
+This is the interactive dense-RAG path. Its default generation and retrieval
+choices are deliberately fixed to `rageval-qwen` and `arctic`.
+
+## Run the generation benchmark
+
+Run all committed cases through closed-book, oracle, and Arctic dense-RAG
+conditions:
+
+```bash
+./run_generation_eval.sh
+```
+
+No arguments produces the canonical baseline. For a quick development check,
+filter by case or condition; the resulting manifest is marked non-canonical:
+
+```bash
+./run_generation_eval.sh --case flash-voltage-regulator --condition oracle
+./run_generation_eval.sh --case out-of-domain-cookie-recipe --condition dense_rag:arctic
+```
+
+The evaluator uses non-streaming responses so each completed result is written
+atomically to `runs/generation/<timestamp>/results.jsonl`. The same directory
+also contains the resolved `manifest.json` and aggregate `summary.json`.
 
 Useful checks:
 
@@ -108,21 +128,19 @@ future harness, so the same model can be evaluated fairly in every condition.
 
 ## First generation comparison
 
-Run the same questions, prompt, model definition, answer format, and limits in
-four evidence-access conditions:
+The current baseline runs the same questions, model definition, scoring rules,
+and limits in three evidence-access conditions:
 
 1. **Closed-book:** no corpus or tools. This measures model prior knowledge and
    hallucination or appropriate abstention.
-2. **Grep agent:** the model may issue a bounded literal-search tool call over
-   normalized text extracted from the corpus and read only returned excerpts.
+2. **Oracle context:** the harness supplies the human-verified evidence. This
+   separates retrieval failure from the model's ability to use correct context.
 3. **Dense RAG:** the harness supplies top-k evidence from the existing
    retrieval pipeline; the model does not choose the evidence.
-4. **Oracle context:** the harness supplies the human-verified evidence. This
-   separates retrieval failure from the model's ability to use correct context.
 
-The grep condition is intentionally agentic while dense RAG initially is not.
-A later condition can let the model decide when to call dense retrieval, but it
-should not replace the simpler comparison.
+A bounded grep agent is the next planned condition. It will be intentionally
+agentic while dense RAG is not. A later condition can let the model decide when
+to call dense retrieval, but it should not replace the simpler comparison.
 
 Start with narrow questions whose answers can be checked without another LLM:
 
@@ -131,9 +149,11 @@ Start with narrow questions whose answers can be checked without another LLM:
 - exact identifiers, register names, limits, and enumerated modes
 - corpus-negative questions where the correct result is `unknown`
 
-Store a typed expected answer and acceptable variants for each case. Score exact
-or normalized values, boolean labels, abstention, evidence correctness, and
-unsupported claims. Latency and tool-call count are secondary measurements.
+Store a typed expected answer and acceptable variants for each case. The current
+runner scores normalized required facts, abstention, citation labels, and
+evidence-page retrieval. Unsupported extra claims remain a manual review item
+until a reliable claim-level check is added. Latency and tool-call count are
+secondary measurements.
 
 This first slice asks a focused question: does the small model already know the
 answer, can cheap literal inspection supply it, does dense retrieval improve it,

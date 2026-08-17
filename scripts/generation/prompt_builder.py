@@ -72,6 +72,26 @@ Question: {question}"""
     ]
 
 
+def build_closed_book_messages(question: str) -> list[dict[str, str]]:
+    """Build the no-retrieval baseline prompt.
+
+    This condition deliberately does not claim that documents were supplied and
+    does not request citations. It measures what the model answers from its own
+    parameters, including whether it guesses when it is uncertain.
+    """
+    return [
+        {
+            "role": "system",
+            "content": (
+                "Answer the question as accurately and concisely as you can. "
+                "No reference documents or retrieval results are available. "
+                "If you do not know, say so instead of inventing details."
+            ),
+        },
+        {"role": "user", "content": question},
+    ]
+
+
 def referenced_source_labels(answer: str) -> list[str]:
     labels: list[str] = []
     for match in CITATION_PATTERN.finditer(answer):

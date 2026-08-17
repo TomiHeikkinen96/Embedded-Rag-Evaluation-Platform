@@ -17,18 +17,28 @@ Its defaults are the `rageval-qwen` Ollama model, the `arctic` embedding index,
 top-three retrieval, streaming output, grounded citations, and timing/token
 metrics.
 
-The later canonical benchmark will require no arguments:
+The implemented baseline benchmark requires no arguments:
 
 ```bash
 ./run_generation_eval.sh
 ```
 
-No arguments means: load the committed experiment specification and run its
-complete matrix. Optional selectors such as `--embedding arctic`, `--case`, or
-`--condition` are development filters. Filtered runs must be marked non-canonical
-in their manifest.
+No arguments means: load the committed experiment specification and run all
+currently declared cases and conditions. Optional repeatable `--case` and
+`--condition` selectors are development filters. Filtered runs are marked
+non-canonical in their manifest.
 
-## Canonical matrix
+## Current baseline matrix
+
+The implemented `esp32-generation-v1` specification contains:
+
+| Run identity | Evidence supplied to Qwen |
+| --- | --- |
+| `closed_book` | none |
+| `oracle` | committed human-verified source excerpts |
+| `dense_rag:arctic` | top-three Arctic Embed FAISS results |
+
+## Expansion matrix
 
 The generation model, prompt, questions, context budget, top-k, scoring policy,
 and repetition count remain fixed. Only evidence access changes:
@@ -99,7 +109,7 @@ runs/generation/2026-08-17T12-00-00Z/
   summary.json
 ```
 
-The manifest records resolved configuration and whether the run is canonical.
+The manifest records resolved configuration, input-file hashes, and whether the run is canonical.
 JSONL stores each completed attempt immediately so interrupted runs retain
 evidence. The summary aggregates answer accuracy, correct refusal, retrieval
 evidence hits, valid citations, latency, token use, tool calls, parsing errors,
@@ -107,14 +117,14 @@ and runtime failures.
 
 ## Implementation checkpoints
 
-1. Complete `ask_question.sh` with Arctic retrieval, grounded prompting, Qwen,
+1. [x] Complete `ask_question.sh` with Arctic retrieval, grounded prompting, Qwen,
    citations, refusal instructions, and usage metrics.
-2. Define typed generation cases by selecting narrow boolean, exact-value,
+2. [x] Define typed generation cases by selecting narrow boolean, exact-value,
    identifier, and unanswerable cases from the retrieval benchmark.
-3. Add the committed experiment specification and common run-result schema.
-4. Implement closed-book and oracle conditions first; save JSONL attempts.
-5. Add deterministic answer normalization, refusal, and citation scoring.
-6. Add dense-RAG evaluation for Arctic, then expand it across all registered
+3. [x] Add the committed experiment specification and common run-result schema.
+4. [x] Implement closed-book and oracle conditions first; save JSONL attempts.
+5. [x] Add deterministic answer normalization, refusal, and citation scoring.
+6. [x] Add dense-RAG evaluation for Arctic. Next expand it across all registered
    embedding indexes without duplicating embedding-independent conditions.
 7. Add fixed literal retrieval and generate the first canonical summary.
 8. Add repetitions and explicit seeds for robustness runs.

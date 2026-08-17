@@ -40,14 +40,26 @@ The benchmark should contain exact terms, paraphrases, table questions, broad
 questions, ambiguous questions, and questions not answered by the corpus.
 Negative cases and failures remain visible in reports.
 
-## Grounded generation — planned
+## Grounded generation — implemented baseline
 
-Each engineering question will be run under comparable evidence-access conditions:
+The first generation benchmark runs each question under three comparable
+evidence-access conditions:
 
 1. no external context
-2. a bounded literal-search (`grep`) tool
-3. retrieved context supplied by the dense RAG pipeline
-4. manually verified oracle context
+2. manually verified oracle context
+3. retrieved context supplied by the Arctic dense RAG pipeline
+
+Run the committed benchmark with:
+
+```bash
+./run_generation_eval.sh
+```
+
+The runner records a manifest, each attempt as JSONL, and an aggregate summary
+under ignored `runs/generation/` directories. The first dataset contains exact
+values, identifiers, multi-fact questions, corpus-negative questions, and an
+out-of-domain control. Optional `--case` and `--condition` filters create a
+non-canonical development run.
 
 This separates three failure modes:
 
@@ -62,13 +74,21 @@ than being compared through hand-picked demonstrations.
 The first local baseline is the checked-in Qwen 3.5 9B
 [`Modelfile`](../Modelfile). Initial tasks should be boolean capability checks,
 exact-value extraction, exact identifiers, and unanswerable controls. These
-permit deterministic scoring of normalized answers, abstention, evidence use,
-and unsupported claims before code generation or LLM judging is introduced.
+permit deterministic scoring of normalized answers, abstention, citation
+labels, and evidence use before code generation or LLM judging is introduced.
+Raw answers remain available for reviewing unsupported extra claims.
 
 The model remains identical across conditions. The harness—not the Modelfile—
-controls whether it receives no evidence, may call a grep tool, receives dense
-retrieval results, or receives oracle evidence. See the
+controls whether it receives no evidence, receives dense retrieval results, or
+receives oracle evidence. A bounded grep condition remains the next evidence
+access method to add. See the
 [local model workflow](local-model.md).
+
+Current deterministic scores cover required facts and accepted variants,
+refusal intent, exact refusal format, citation presence, citation-label
+validity, and whether dense retrieval reached a labelled evidence page.
+Unsupported free-form claims remain visible in raw JSONL attempts but are not
+yet claimed as automatically scored.
 
 ## Validation ladder — planned
 

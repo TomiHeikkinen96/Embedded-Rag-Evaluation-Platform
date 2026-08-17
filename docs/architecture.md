@@ -6,9 +6,9 @@ RAGeval is an experimentation platform for measuring how domain context affects
 AI-assisted embedded engineering. It favours explicit data flow and inspectable
 artifacts over framework abstraction.
 
-The current implementation evaluates retrieval and exposes one grounded-answer
-CLI using Arctic retrieval and local Qwen generation. Repeatable generation
-evaluation and agentic execution remain later stages.
+The current implementation evaluates retrieval, exposes one grounded-answer
+CLI using Arctic retrieval and local Qwen generation, and runs a repeatable
+three-condition generation benchmark. Agentic execution remains a later stage.
 
 ## Current data flow
 
@@ -26,6 +26,8 @@ flowchart LR
     RERANK --> VIZ["Embedding explorer"]
     RERANK --> GROUNDED["Source-labelled grounded prompt"]
     GROUNDED --> OLLAMA["Qwen through local Ollama"]
+    OLLAMA --> EVAL["Deterministic generation scorer"]
+    EVAL --> ARTIFACTS["Manifest, JSONL attempts, summary"]
 ```
 
 ## Current boundaries
@@ -39,6 +41,9 @@ flowchart LR
 - `scripts/generation/` owns the Ollama transport and grounded prompt format.
 - `scripts/answer_question.py` composes retrieval with generation;
   `ask_question.sh` exposes the supported native macOS command.
+- `scripts/evaluation/` owns generation benchmark loading, evidence conditions,
+  deterministic scoring, artifact persistence, and aggregation;
+  `run_generation_eval.sh` exposes the canonical local run.
 - `scripts/visualization/` exports browser-ready visualization data.
 - root shell scripts provide task-oriented Docker workflows.
 
@@ -47,6 +52,7 @@ Project-level resources remain at the root:
 - `data/` contains local source documents.
 - `storage/` contains generated SQLite and FAISS artifacts.
 - `visualization/` contains the browser page and generated local data.
+- `runs/` contains ignored, reproducible generation-evaluation artifacts.
 - `compose.yaml`, `Dockerfile`, and `requirements.txt` define the runtime.
 
 ## Important invariants

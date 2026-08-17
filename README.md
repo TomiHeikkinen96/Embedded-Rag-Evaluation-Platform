@@ -107,6 +107,9 @@ Useful commands:
 # Ask one grounded question with Arctic retrieval and local Qwen
 ./ask_question.sh "What voltage can the flash regulator supply?"
 
+# Run the committed closed-book vs oracle vs Arctic RAG benchmark
+./run_generation_eval.sh
+
 # Build all missing model indexes; reprocess changed PDFs
 ./ingest_data.sh
 
@@ -138,7 +141,7 @@ and visualization data remain local and are not committed.
 - [Retrieval pipeline](docs/retrieval-pipeline.md)
 - [Evaluation design](docs/evaluation.md)
 - [Local Ollama model and generation baseline](docs/local-model.md)
-- [Generation evaluation implementation plan](docs/generation-evaluation-plan.md)
+- [Generation evaluation runner and expansion plan](docs/generation-evaluation-plan.md)
 - [Embedding explorer](docs/visualization.md)
 - [Project roadmap](docs/roadmap.md)
 - [Detailed retrieval-evaluation plan](docs/retrieval-evaluation-plan.md)

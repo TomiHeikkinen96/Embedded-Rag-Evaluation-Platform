@@ -10,6 +10,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
 from generation.prompt_builder import (  # noqa: E402
     REFUSAL_TEXT,
+    build_closed_book_messages,
     build_grounded_messages,
     referenced_source_labels,
     sources_from_retrieval,
@@ -54,6 +55,13 @@ class GroundedPromptTests(unittest.TestCase):
         labels = referenced_source_labels("First [S2], then [S1], and [S2] again.")
 
         self.assertEqual(labels, ["S2", "S1"])
+
+    def test_closed_book_prompt_does_not_claim_sources_exist(self) -> None:
+        messages = build_closed_book_messages("What is the value?")
+
+        self.assertIn("No reference documents", messages[0]["content"])
+        self.assertNotIn("[S1]", messages[0]["content"])
+        self.assertEqual(messages[1]["content"], "What is the value?")
 
 
 if __name__ == "__main__":

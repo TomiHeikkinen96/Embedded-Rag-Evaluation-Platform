@@ -55,11 +55,12 @@ detail belongs in `docs/`; completed history remains available in Git.
 - [x] Select Qwen 3.5 9B and add a reproducible local Ollama Modelfile.
 - [x] Add `ask_question.sh` with Arctic retrieval, bounded source-labelled
   context, local Qwen generation, citations, streaming, and usage metrics.
-- [ ] Add closed-book, bounded grep-agent, dense-RAG, and oracle-context
-  generation runs using the same model and questions.
-- [ ] Add typed boolean, exact-value, identifier, and unanswerable generation
+- [x] Add closed-book, Arctic dense-RAG, and oracle-context generation runs
+  using the same model and questions. Bounded grep remains the next condition.
+- [x] Add typed exact-value, identifier, multi-fact, and unanswerable generation
   cases with deterministic answer normalization.
-- [ ] Add deterministic answer and compilation checks before LLM judging.
+- [x] Add initial deterministic fact, refusal, citation, and evidence-page
+  checks before LLM judging. Compilation checks belong to later code tasks.
 - [ ] Define at least one hardware-observable embedded benchmark task.
 - [ ] Add broader agentic planning and tools only after the bounded grep and
   supplied-context generation conditions are measurable.
@@ -91,6 +92,9 @@ detail belongs in `docs/`; completed history remains available in Git.
 - Qwen's first negative-case run clearly refused but added an explanation after
   the requested exact refusal sentence. The generation answer contract and
   scorer must distinguish refusal intent from exact-format compliance.
+- Generation fact scoring uses normalized accepted substrings. It does not yet
+  understand negation or automatically detect unsupported additional claims;
+  raw answers and supplied sources remain in JSONL for inspection.
 
 ## Evaluation log
 
@@ -127,3 +131,8 @@ detail belongs in `docs/`; completed history remains available in Git.
   positive query returned the correct 3.3 V, 1.8 V, and 40 mA values with the
   expected TRM page citation. The native-USB negative query refused but did not
   obey the exact-output constraint, motivating explicit refusal-format scoring.
+- 2026-08-17: Added the first generation evaluation runner with seven committed
+  cases and closed-book, oracle, and Arctic dense-RAG conditions. Runs persist
+  their resolved manifest, each attempt as JSONL, and aggregate summary. The
+  deterministic scorer keeps refusal intent separate from exact refusal format
+  and records evidence-page retrieval hits separately from answer correctness.

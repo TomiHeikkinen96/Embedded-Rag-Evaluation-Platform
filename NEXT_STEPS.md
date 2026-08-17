@@ -13,12 +13,12 @@ changing only how the model can obtain evidence.
 
 1. [x] Install native Ollama, create `rageval-qwen`, and complete the first
    Arctic retrieval-to-grounded-answer CLI.
-2. Define typed boolean, exact-value, identifier, and unanswerable cases by
+2. [x] Define typed boolean, exact-value, identifier, and unanswerable cases by
    extending or mapping the existing labelled benchmark.
-3. Add a narrow Ollama provider and record the resolved model, prompt, settings,
+3. [x] Add a narrow Ollama provider and record the resolved model, prompt, settings,
    response, latency, and failure for every run.
-4. Implement closed-book and oracle-context runs first.
-5. Add supplied dense-RAG context using the existing retrieval pipeline.
+4. [x] Implement closed-book and oracle-context runs first.
+5. [x] Add supplied Arctic dense-RAG context using the existing retrieval pipeline.
 6. Add one bounded literal-search tool over normalized extracted corpus text.
 7. Score normalized answers, abstention, evidence correctness, unsupported
    claims, latency, and tool-call count across all four conditions.
