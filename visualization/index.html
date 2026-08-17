@@ -293,7 +293,18 @@
     }
 
     function formatNumber(value, digits = 0) {
-      return value === null || value === undefined ? '—' : Number(value).toFixed(digits);
+      return value === null || value === undefined
+        ? '—'
+        : Number(value).toLocaleString(undefined, {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits
+          });
+    }
+
+    function tokenUsage(metrics) {
+      const average = `${formatNumber(metrics.average_prompt_tokens)} in · ${formatNumber(metrics.average_output_tokens)} out · ${formatNumber(metrics.average_total_tokens)} total`;
+      const aggregate = `${formatNumber(metrics.total_prompt_tokens)} in · ${formatNumber(metrics.total_output_tokens)} out · ${formatNumber(metrics.total_tokens)} total`;
+      return `${average}<br><span class="case-meta">run total ${aggregate}</span>`;
     }
 
     function conditionLabel(condition) {
@@ -335,7 +346,7 @@
       table.innerHTML = `<thead><tr>
         <th>Condition</th><th>Recorded pass</th><th>Answer</th><th>Refusal</th>
         <th>Citations</th><th>Gold evidence</th><th>Context</th><th>Generation</th>
-        <th>Pipeline</th><th>vs Oracle</th><th>Prompt tokens</th><th>Output tok/s</th>
+        <th>Pipeline</th><th>vs Oracle</th><th>Token usage (average)</th><th>Output tok/s</th>
       </tr></thead><tbody>${conditions.map(condition => {
         const metrics = summary[condition];
         if (!metrics) {
@@ -352,7 +363,7 @@
           <td>${formatSeconds(metrics.average_generation_seconds)}</td>
           <td>${formatSeconds(metrics.average_pipeline_seconds)}</td>
           <td>${oracleComparison(metrics, condition)}</td>
-          <td>${formatNumber(metrics.average_prompt_tokens)}</td>
+          <td>${tokenUsage(metrics)}</td>
           <td>${formatNumber(metrics.average_output_tokens_per_second, 2)}</td>
         </tr>`;
       }).join('')}</tbody>`;
@@ -380,7 +391,7 @@
         ? `<ul class="source-list">${record.sources.map(source => `<li><strong>[${escapeHtml(source.label)}] ${escapeHtml(source.title)}${source.page_number === null ? '' : ` · PDF page ${source.page_number}`}</strong> — ${escapeHtml(previewText(source.text))}</li>`).join('')}</ul>`
         : '';
       return `<div class="attempt" data-status="${status}">
-        <div class="attempt-head"><strong>${escapeHtml(conditionLabel(condition))} · ${score.passed ? 'PASS' : 'FAIL'}</strong><span class="attempt-meta">${formatSeconds(pipelineSeconds)} pipeline · ${record.usage.prompt_tokens} prompt + ${record.usage.output_tokens} output tokens · ${record.usage.output_tokens_per_second.toFixed(2)} tok/s · ${evidence} · citations ${escapeHtml(citations)}</span></div>
+        <div class="attempt-head"><strong>${escapeHtml(conditionLabel(condition))} · ${score.passed ? 'PASS' : 'FAIL'}</strong><span class="attempt-meta">${formatSeconds(pipelineSeconds)} pipeline · ${formatNumber(record.usage.prompt_tokens)} input + ${formatNumber(record.usage.output_tokens)} output = ${formatNumber(record.usage.total_tokens ?? (record.usage.prompt_tokens + record.usage.output_tokens))} total tokens · ${record.usage.output_tokens_per_second.toFixed(2)} tok/s · ${evidence} · citations ${escapeHtml(citations)}</span></div>
         <div class="answer-text">${escapeHtml(record.answer)}</div>${facts}${sources}
       </div>`;
     }

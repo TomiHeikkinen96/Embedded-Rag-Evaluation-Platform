@@ -67,6 +67,13 @@ def mean(values: list[float]) -> float | None:
     return sum(values) / len(values) if values else None
 
 
+def usage_total(usage: dict) -> int:
+    return usage.get(
+        "total_tokens",
+        usage.get("prompt_tokens", 0) + usage.get("output_tokens", 0),
+    )
+
+
 def enrich_summary(summary: dict, records: list[dict]) -> dict:
     enriched = deepcopy(summary)
     completed = [record for record in records if record.get("status") == "completed"]
@@ -96,6 +103,18 @@ def enrich_summary(summary: dict, records: list[dict]) -> dict:
         )
         metrics["average_output_tokens"] = mean(
             [record["usage"]["output_tokens"] for record in items]
+        )
+        metrics["average_total_tokens"] = mean(
+            [usage_total(record["usage"]) for record in items]
+        )
+        metrics["total_prompt_tokens"] = sum(
+            record["usage"]["prompt_tokens"] for record in items
+        )
+        metrics["total_output_tokens"] = sum(
+            record["usage"]["output_tokens"] for record in items
+        )
+        metrics["total_tokens"] = sum(
+            usage_total(record["usage"]) for record in items
         )
         metrics["average_output_tokens_per_second"] = mean(
             [record["usage"]["output_tokens_per_second"] for record in items]

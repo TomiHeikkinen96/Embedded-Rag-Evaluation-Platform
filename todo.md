@@ -151,3 +151,6 @@ detail belongs in `docs/`; completed history remains available in Git.
   of its 14.91 s gap to oracle came from evaluating a much larger prompt (1660
   versus 172 average prompt tokens), not FAISS retrieval. Closed-book generated
   much longer answers and was 3.21 s slower than Arctic RAG on average.
+- 2026-08-17: Generation reporting now exposes average and whole-run input,
+  output, and total token counts per condition. Existing artifacts remain
+  compatible because missing total counts are derived from input plus output.

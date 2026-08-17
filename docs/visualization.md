@@ -25,7 +25,8 @@ views. Generation contains:
   canonical run
 - recorded pass, answer, refusal, citation, and gold-evidence-hit rates by
   condition
-- context, generation, total pipeline, token, and throughput comparisons
+- context, generation, total pipeline, and throughput comparisons
+- average and whole-run input, output, and total token usage by condition
 - pipeline-time delta and ratio against oracle context
 - per-question answers, deterministic fact checks, citations, supplied
   excerpts, and timing

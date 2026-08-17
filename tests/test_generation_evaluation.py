@@ -109,13 +109,15 @@ class GenerationEvaluationTests(unittest.TestCase):
                 "citation_required": True,
             },
             "timing": {"context_seconds": 0.1, "generation_seconds": 1.0},
-            "usage": {"prompt_tokens": 10, "output_tokens": 5},
+            "usage": {"prompt_tokens": 10, "output_tokens": 5, "total_tokens": 15},
         }
 
         summary = summarize_results([record])
 
         self.assertEqual(summary["conditions"]["oracle"]["pass_rate"], 1.0)
         self.assertEqual(summary["conditions"]["oracle"]["total_prompt_tokens"], 10)
+        self.assertEqual(summary["conditions"]["oracle"]["total_output_tokens"], 5)
+        self.assertEqual(summary["conditions"]["oracle"]["total_tokens"], 15)
 
 
 if __name__ == "__main__":

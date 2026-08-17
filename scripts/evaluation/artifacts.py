@@ -86,6 +86,13 @@ def summarize_results(records: list[dict]) -> dict:
             ),
             "total_prompt_tokens": sum(item["prompt_tokens"] for item in usage_items),
             "total_output_tokens": sum(item["output_tokens"] for item in usage_items),
+            "total_tokens": sum(
+                item.get(
+                    "total_tokens",
+                    item["prompt_tokens"] + item["output_tokens"],
+                )
+                for item in usage_items
+            ),
         }
 
     return {

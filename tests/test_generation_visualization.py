@@ -67,6 +67,13 @@ class GenerationVisualizationTests(unittest.TestCase):
             self.assertEqual(payload["runs"][0]["state"], "partial")
             self.assertEqual(payload["runs"][0]["observed_attempts"], 1)
             self.assertEqual(payload["runs"][0]["expected_attempts"], 2)
+            metrics = payload["runs"][0]["summary"]["conditions"]["closed_book"]
+            self.assertEqual(metrics["average_prompt_tokens"], 10)
+            self.assertEqual(metrics["average_output_tokens"], 5)
+            self.assertEqual(metrics["average_total_tokens"], 15)
+            self.assertEqual(metrics["total_prompt_tokens"], 10)
+            self.assertEqual(metrics["total_output_tokens"], 5)
+            self.assertEqual(metrics["total_tokens"], 15)
 
     def test_latest_complete_canonical_run_is_default(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
