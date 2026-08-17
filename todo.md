@@ -172,3 +172,8 @@ detail belongs in `docs/`; completed history remains available in Git.
   Arctic retrieval depth can be compared without editing the committed
   top-three baseline. Resolved depth is printed and persisted in each run
   manifest; closed-book and oracle can be omitted from depth-only comparisons.
+- 2026-08-17: Added `create_snapshot_from_current_eval.sh` for timestamped
+  frozen evaluation snapshots and a Python-only
+  fallback viewer for interview safety. The snapshot contains the already
+  exported HTML/JSON plus a local pinned Plotly asset, so it performs no model,
+  index, Docker, Ollama, or network work when presented.

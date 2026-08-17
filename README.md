@@ -137,6 +137,11 @@ Useful commands:
 
 # Regenerate retrieval data, export generation runs, and open Evaluation
 ./view_evaluation.sh 8080
+
+# Freeze the currently exported dashboard, then serve it without Docker,
+# model indexes, embeddings, Ollama, or internet access
+./create_snapshot_from_current_eval.sh
+./backup_view_evaluation.sh 8080
 ```
 
 Source PDFs belong in `data/`. Generated indexes, databases, model downloads,

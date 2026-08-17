@@ -56,6 +56,35 @@ available artifacts when `view_evaluation.sh` starts.
 If a run's recorded input hashes differ from the current benchmark or
 Modelfile, the page marks it as historical rather than silently rescoring it.
 
+## Frozen demo backup
+
+After opening the live explorer and confirming the desired runs are exported,
+freeze its current static assets with:
+
+```bash
+./create_snapshot_from_current_eval.sh
+```
+
+The command copies the current HTML and three generated JSON payloads into a
+timestamped ignored directory under `backups/evaluation-demo/`. It also bundles
+the pinned Plotly browser library, making the snapshot independent of internet
+access. The first snapshot downloads that pinned asset; later snapshots reuse
+the local copy. It does not rerun retrieval or generation.
+
+Serve the newest frozen snapshot with:
+
+```bash
+./backup_view_evaluation.sh
+./backup_view_evaluation.sh 8080
+```
+
+The backup viewer uses Python's standard-library HTTP server. It does not need
+Docker, Colima, FAISS indexes, embedding models, Ollama, or the source PDFs.
+`Ctrl+C` stops only the Python process started by that command. Snapshots are
+local demo artifacts and remain ignored by Git because the embedding payload is
+large; copy the selected timestamped directory to separate storage for a true
+machine-loss backup.
+
 Retrieval views show:
 
 - corpus chunk embeddings and benchmark-query embeddings

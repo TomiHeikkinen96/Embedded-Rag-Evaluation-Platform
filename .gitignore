@@ -11,3 +11,4 @@ visualization/embedding-data.json
 visualization/golden-evaluation.json
 visualization/generation-evaluation.json
 runs/
+backups/evaluation-demo/
