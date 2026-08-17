@@ -76,6 +76,7 @@ def run_evaluation(
     cases: list[GenerationCase],
     conditions: list[str],
     repetitions: int,
+    top_k: int,
     model: str,
     url: str,
     runs_root: Path,
@@ -93,7 +94,7 @@ def run_evaluation(
         "prompt_version": spec.prompt_version,
         "conditions": conditions,
         "case_ids": [case.case_id for case in cases],
-        "top_k": spec.top_k,
+        "top_k": top_k,
         "repetitions": repetitions,
         "timeout_seconds": spec.timeout_seconds,
         "input_sha256": {
@@ -122,7 +123,7 @@ def run_evaluation(
                     prepared = prepare_condition(
                         condition,
                         case,
-                        top_k=spec.top_k,
+                        top_k=top_k,
                         retriever=retriever,
                     )
                     result = provider.chat(prepared.messages, stream=False)

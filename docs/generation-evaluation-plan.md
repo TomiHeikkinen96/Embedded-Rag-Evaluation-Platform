@@ -28,6 +28,18 @@ currently declared cases and conditions. Optional repeatable `--case` and
 `--condition` selectors are development filters. Filtered runs are marked
 non-canonical in their manifest.
 
+The committed baseline keeps dense retrieval at top-three. To compare Arctic at
+top-ten without changing that baseline, run only the retrieval-dependent
+condition with an explicit override:
+
+```bash
+./run_generation_eval.sh --condition dense_rag:arctic --top-k 10
+```
+
+The override is recorded as `top_k: 10` in the run manifest and marks the run
+non-canonical. Closed-book and oracle do not retrieve, so rerunning them for this
+comparison would add time without measuring the effect of retrieval depth.
+
 ## Current baseline matrix
 
 The implemented `esp32-generation-v1` specification contains:

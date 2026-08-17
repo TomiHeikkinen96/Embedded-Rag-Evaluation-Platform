@@ -93,6 +93,10 @@ filter by case or condition; the resulting manifest is marked non-canonical:
 ```bash
 ./run_generation_eval.sh --case flash-voltage-regulator --condition oracle
 ./run_generation_eval.sh --case out-of-domain-cookie-recipe --condition dense_rag:arctic
+
+# Compare Arctic generation with ten retrieved excerpts; leaves the canonical
+# top-three benchmark unchanged.
+./run_generation_eval.sh --condition dense_rag:arctic --top-k 10
 ```
 
 The evaluator uses non-streaming responses so each completed result is written

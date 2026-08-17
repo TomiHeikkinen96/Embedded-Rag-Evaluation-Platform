@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -12,6 +13,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from evaluation.artifacts import summarize_results  # noqa: E402
 from evaluation.benchmark import GenerationCase, load_benchmark  # noqa: E402
 from evaluation.scoring import normalize_answer, score_answer  # noqa: E402
+from run_generation_eval import parse_args  # noqa: E402
 
 
 class GenerationEvaluationTests(unittest.TestCase):
@@ -21,7 +23,14 @@ class GenerationEvaluationTests(unittest.TestCase):
         )
 
         self.assertEqual(spec.conditions, ["closed_book", "oracle", "dense_rag:arctic"])
+        self.assertEqual(spec.top_k, 3)
         self.assertGreaterEqual(len(cases), 6)
+
+    def test_generation_cli_accepts_top_k_override(self) -> None:
+        with patch.object(sys, "argv", ["run_generation_eval.py", "--top-k", "10"]):
+            args = parse_args()
+
+        self.assertEqual(args.top_k, 10)
 
     def test_value_normalization_handles_units_and_symbols(self) -> None:
         self.assertEqual(normalize_answer("10 µA"), normalize_answer("10 uA"))

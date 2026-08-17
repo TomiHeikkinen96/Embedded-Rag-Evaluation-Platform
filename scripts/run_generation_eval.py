@@ -29,6 +29,11 @@ def parse_args() -> argparse.Namespace:
         "--case", action="append", help="Run only this case id. Repeat to select several."
     )
     parser.add_argument("--repetitions", type=int, help="Override repetitions for a development run.")
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        help="Override dense-RAG retrieval depth for a non-canonical comparison run.",
+    )
     parser.add_argument("--model", help="Override the Ollama model for a development run.")
     parser.add_argument("--url", default=DEFAULT_OLLAMA_CHAT_URL)
     return parser.parse_args()
@@ -62,12 +67,21 @@ def main() -> int:
     repetitions = args.repetitions if args.repetitions is not None else spec.repetitions
     if repetitions < 1:
         raise SystemExit("--repetitions must be at least 1")
+    top_k = args.top_k if args.top_k is not None else spec.top_k
+    if top_k < 1:
+        raise SystemExit("--top-k must be at least 1")
     model = args.model or spec.model
     canonical = (
         benchmark_dir.resolve() == DEFAULT_BENCHMARK_DIR.resolve()
         and args.url == DEFAULT_OLLAMA_CHAT_URL
         and not any(
-            [args.condition, args.case, args.repetitions is not None, args.model]
+            [
+                args.condition,
+                args.case,
+                args.repetitions is not None,
+                args.top_k is not None,
+                args.model,
+            ]
         )
     )
 
@@ -76,11 +90,13 @@ def main() -> int:
         f"{repetitions} repetitions with {model}."
     )
     print(f"Run type: {'canonical' if canonical else 'filtered/non-canonical'}")
+    print(f"Dense retrieval depth: top-k {top_k}")
     run_directory, summary = run_evaluation(
         spec=spec,
         cases=cases,
         conditions=conditions,
         repetitions=repetitions,
+        top_k=top_k,
         model=model,
         url=args.url,
         runs_root=PROJECT_ROOT / "runs" / "generation",

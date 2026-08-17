@@ -117,6 +117,9 @@ Useful commands:
 # Run the committed closed-book vs oracle vs Arctic RAG benchmark
 ./run_generation_eval.sh
 
+# Compare Arctic RAG at top-k 10 without changing the top-k 3 baseline
+./run_generation_eval.sh --condition dense_rag:arctic --top-k 10
+
 # Build all missing model indexes; reprocess changed PDFs
 ./ingest_data.sh
 

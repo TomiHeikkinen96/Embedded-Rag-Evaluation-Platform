@@ -39,6 +39,9 @@ views. Generation contains:
 - per-question answers, deterministic fact checks, citations, supplied
   excerpts, and timing
 
+For runs containing dense RAG, the run selector and selected-run status show
+the saved retrieval depth so top-k comparison runs remain distinguishable.
+
 Required-fact coverage counts accepted facts found in answers; it does not mean
 the complete answer is correct. Overall contract pass additionally applies the
 condition's refusal and citation rules. Unsupported or contradictory extra

@@ -442,7 +442,12 @@
       if (!run || !run.available) return;
       const status = document.querySelector('.generation-status');
       const canonical = run.manifest.canonical ? 'canonical' : 'filtered / non-canonical';
-      status.innerHTML = `<strong>${escapeHtml(runStateLabel(run))}</strong><span>${canonical}</span><span>${run.observed_attempts}/${run.expected_attempts} attempts</span><span>${escapeHtml(run.manifest.model)}</span><span>${escapeHtml(run.manifest.prompt_version || 'prompt version unavailable')}</span>`;
+      const hasDenseRag = (run.manifest.conditions || []).some(condition => condition.startsWith('dense_rag:'));
+      const topK = Number(run.manifest.top_k);
+      const topKLabel = hasDenseRag
+        ? `<span>${Number.isInteger(topK) && topK > 0 ? `top-k ${topK}` : 'top-k unavailable'}</span>`
+        : '';
+      status.innerHTML = `<strong>${escapeHtml(runStateLabel(run))}</strong><span>${canonical}</span><span>${run.observed_attempts}/${run.expected_attempts} attempts</span>${topKLabel}<span>${escapeHtml(run.manifest.model)}</span><span>${escapeHtml(run.manifest.prompt_version || 'prompt version unavailable')}</span>`;
       const warnings = [...run.warnings];
       if (run.state === 'partial') warnings.unshift('This is a partial snapshot derived from completed JSONL attempts; no evaluation rerun is required.');
       if (run.input_drift && run.input_drift.length) warnings.unshift(`Historical inputs: current ${run.input_drift.join(', ')} differs from this run. Recorded scores were not rewritten.`);
@@ -467,8 +472,11 @@
       newestFirst.forEach(run => {
         const button = document.createElement('button');
         const started = run.manifest.started_at ? new Date(run.manifest.started_at).toLocaleString() : run.run_id;
+        const hasDenseRag = (run.manifest.conditions || []).some(condition => condition.startsWith('dense_rag:'));
+        const topK = Number(run.manifest.top_k);
+        const topKText = hasDenseRag && Number.isInteger(topK) && topK > 0 ? ` · top-k ${topK}` : '';
         button.type = 'button';
-        button.innerHTML = `${run.manifest.canonical ? 'Canonical' : 'Filtered'}<small>${escapeHtml(started)} · ${escapeHtml(runStateLabel(run))}</small>`;
+        button.innerHTML = `${run.manifest.canonical ? 'Canonical' : 'Filtered'}<small>${escapeHtml(started)} · ${escapeHtml(runStateLabel(run))}${topKText}</small>`;
         button.setAttribute('aria-pressed', run.run_id === selectedGenerationRunId ? 'true' : 'false');
         button.addEventListener('click', () => {
           selectedGenerationRunId = run.run_id;

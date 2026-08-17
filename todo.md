@@ -168,3 +168,7 @@ detail belongs in `docs/`; completed history remains available in Git.
   The viewer now owns one deterministic labelled container, replaces only that
   verified container on restart, removes it explicitly on `Ctrl+C`, and checks
   for unrelated HTTP port conflicts before expensive data generation.
+- 2026-08-17: Added a non-canonical `--top-k` generation-evaluation override so
+  Arctic retrieval depth can be compared without editing the committed
+  top-three baseline. Resolved depth is printed and persisted in each run
+  manifest; closed-book and oracle can be omitted from depth-only comparisons.
