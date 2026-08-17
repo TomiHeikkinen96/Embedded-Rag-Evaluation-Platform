@@ -154,3 +154,9 @@ detail belongs in `docs/`; completed history remains available in Git.
 - 2026-08-17: Generation reporting now exposes average and whole-run input,
   output, and total token counts per condition. Existing artifacts remain
   compatible because missing total counts are derived from input plus output.
+- 2026-08-17: Rechecked two generation failures against the local PDFs. The
+  classic ESP32 Datasheet and TRM contain no native USB D+/D-/OTG assignment,
+  so the closed-book GPIO 15/GPIO 4 answer is unsupported. The Datasheet states
+  10 µA in its Features section, while 100 µA refers specifically to the ULP
+  sensor-monitored pattern; the Arctic failure retrieved the wrong operating
+  condition. No historical benchmark artifacts were rewritten.

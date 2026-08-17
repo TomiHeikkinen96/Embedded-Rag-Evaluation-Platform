@@ -7,17 +7,18 @@ retrieves the right evidence and produces better engineering work is harder.
 
 RAGeval is a local-first experimental harness for measuring that difference.
 The current ESP32 corpus is used to study chunking, embeddings, retrieval, and
-evaluation before adding code generation and agentic workflows.
+grounded generation before adding broader agentic workflows.
 
 The long-term question is whether an inspectable agent can make better embedded
 software changes when its harness supplies grounded context and checks results
 against software and hardware evidence.
 
-> **Current phase:** retrieval evaluation plus a thin grounded-generation slice. PDF ingestion,
-> hash-based chunk ingestion, three model-specific FAISS indexes, SQLite
-> metadata, local search, reranking, a labelled benchmark, and a switchable 3D
-> embedding explorer are implemented. An Arctic-to-Qwen grounded-answer CLI is
-> implemented; the repeatable generation-evaluation runner is next.
+> **Current phase:** retrieval evaluation and a thin grounded-generation slice.
+> PDF ingestion, hash-based chunk ingestion, three model-specific FAISS indexes,
+> SQLite metadata, local search, reranking, labelled retrieval benchmarks, and
+> the evaluation explorer are implemented. The Arctic-to-Qwen answer CLI and a
+> repeatable closed-book, oracle-context, and dense-RAG generation evaluator are
+> also implemented. Bounded literal retrieval is the next comparison condition.
 
 ## Project path
 
@@ -34,15 +35,18 @@ flowchart LR
     classDef done fill:#d1fae5,stroke:#15803d,color:#14532d;
     classDef current fill:#fef3c7,stroke:#d97706,color:#78350f;
     classDef planned fill:#e5e7eb,stroke:#6b7280,color:#374151;
-    class P1A done;
-    class P1B current;
-    class P2,P3,P4 planned;
+    class P1A,P1B done;
+    class P2 current;
+    class P3,P4 planned;
 ```
 
-- **Phase 1 — Context and retrieval:** compare chunking strategies, embedding
-  models, literal search, and dense retrieval against human-labelled evidence.
-- **Phase 2 — Grounded generation:** compare local and hosted coding models with
-  no context, bounded grep access, retrieved context, and known-good oracle context.
+- **Phase 1 — Context and retrieval:** PDF ingestion, shared chunk metadata,
+  three embedding models, dense retrieval, labelled evidence metrics, and
+  failure inspection are implemented. Literal retrieval and the complete
+  chunker matrix remain controlled follow-up experiments.
+- **Phase 2 — Grounded generation:** the local Qwen baseline now compares no
+  context, retrieved Arctic context, and known-good oracle context using the
+  same questions and deterministic scoring. Bounded grep access is next.
 - **Phase 3 — Hardware validation:** evaluate outputs with deterministic checks
   such as compilation and tests, then hardware behaviour and human review where
   automation cannot establish correctness.
@@ -67,6 +71,9 @@ flowchart LR
     SEARCH --> INSPECT["CLI benchmark and 3D explorer"]
     SEARCH --> PROMPT["Grounded prompt · source labels"]
     PROMPT --> QWEN["Qwen 3.5 9B via Ollama"]
+    QWEN --> ANSWER["Answer · citations · refusal"]
+    QWEN --> EVAL["Closed book · oracle · dense RAG"]
+    EVAL --> RUNS["JSONL attempts · summary · explorer"]
 ```
 
 The retrieval unit and display context are deliberately separate, and every
@@ -98,7 +105,7 @@ The native wrapper accepts the same ingestion options as `ingest_data.sh`.
 Docker remains the supported path for the other tools.
 
 The first local generation model runs natively through Ollama. Installation,
-model creation, and the four-condition experiment are described in the
+model creation, and the three-condition baseline are described in the
 [local model workflow](docs/local-model.md).
 
 Useful commands:
