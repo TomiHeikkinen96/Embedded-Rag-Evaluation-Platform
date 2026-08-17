@@ -164,3 +164,7 @@ detail belongs in `docs/`; completed history remains available in Git.
   required-fact presence, corpus-negative refusal, and unsupported-extra-claim
   review. Extra claims remain explicitly manual because normalized substring
   matching cannot establish contradiction or full-answer correctness.
+- 2026-08-17: Hardened `view_evaluation.sh` against orphaned server containers.
+  The viewer now owns one deterministic labelled container, replaces only that
+  verified container on restart, removes it explicitly on `Ctrl+C`, and checks
+  for unrelated HTTP port conflicts before expensive data generation.

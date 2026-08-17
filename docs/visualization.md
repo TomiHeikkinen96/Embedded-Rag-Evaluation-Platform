@@ -15,6 +15,12 @@ unavailable:
 ./view_evaluation.sh 8080
 ```
 
+The viewer owns one labelled container named `rageval-evaluation-server`.
+Starting it again replaces only that exact managed server, and `Ctrl+C`
+explicitly removes the container instead of merely stopping the local Compose
+client. If another application owns the requested port, the script exits before
+regenerating visualization data and suggests selecting another port.
+
 ## What it shows
 
 The top-level **Evaluation** switch separates **Retrieval** from **Generation**.
