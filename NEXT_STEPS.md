@@ -11,7 +11,8 @@ changing only how the model can obtain evidence.
 
 ## Implementation order
 
-1. Install native Ollama and create `rageval-qwen` from the checked-in Modelfile.
+1. [x] Install native Ollama, create `rageval-qwen`, and complete the first
+   Arctic retrieval-to-grounded-answer CLI.
 2. Define typed boolean, exact-value, identifier, and unanswerable cases by
    extending or mapping the existing labelled benchmark.
 3. Add a narrow Ollama provider and record the resolved model, prompt, settings,
@@ -22,6 +23,9 @@ changing only how the model can obtain evidence.
 7. Score normalized answers, abstention, evidence correctness, unsupported
    claims, latency, and tool-call count across all four conditions.
 8. Save a comparable run artifact before adding broader planning or frameworks.
+
+The complete command, matrix, and artifact design is preserved in the
+[generation evaluation plan](docs/generation-evaluation-plan.md).
 
 ## Guardrails
 

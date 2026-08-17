@@ -6,8 +6,9 @@ RAGeval is an experimentation platform for measuring how domain context affects
 AI-assisted embedded engineering. It favours explicit data flow and inspectable
 artifacts over framework abstraction.
 
-The current implementation evaluates retrieval. Code generation and agentic
-execution are later phases.
+The current implementation evaluates retrieval and exposes one grounded-answer
+CLI using Arctic retrieval and local Qwen generation. Repeatable generation
+evaluation and agentic execution remain later stages.
 
 ## Current data flow
 
@@ -23,6 +24,8 @@ flowchart LR
     RETRIEVE --> RERANK["Lexical reranking and deduplication"]
     RERANK --> CLI["Search and benchmark CLI"]
     RERANK --> VIZ["Embedding explorer"]
+    RERANK --> GROUNDED["Source-labelled grounded prompt"]
+    GROUNDED --> OLLAMA["Qwen through local Ollama"]
 ```
 
 ## Current boundaries
@@ -33,6 +36,9 @@ flowchart LR
 - `scripts/processing/` owns PDF loading and embedding.
 - `scripts/utils/db.py` owns SQLite schema and queries.
 - `scripts/search_index.py` owns retrieval and result reranking.
+- `scripts/generation/` owns the Ollama transport and grounded prompt format.
+- `scripts/answer_question.py` composes retrieval with generation;
+  `ask_question.sh` exposes the supported native macOS command.
 - `scripts/visualization/` exports browser-ready visualization data.
 - root shell scripts provide task-oriented Docker workflows.
 

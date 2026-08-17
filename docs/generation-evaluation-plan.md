@@ -1,0 +1,124 @@
+# Generation evaluation plan
+
+This note preserves the implementation sequence after the first grounded-answer
+command. The objective is evaluation as code: a committed experiment definition
+runs the same cases and settings, records every attempt, and produces comparable
+summaries.
+
+## Supported commands
+
+The interactive application uses one deliberate default retrieval path:
+
+```bash
+./ask_question.sh "What maximum output current can the flash regulator supply?"
+```
+
+Its defaults are the `rageval-qwen` Ollama model, the `arctic` embedding index,
+top-three retrieval, streaming output, grounded citations, and timing/token
+metrics.
+
+The later canonical benchmark will require no arguments:
+
+```bash
+./run_generation_eval.sh
+```
+
+No arguments means: load the committed experiment specification and run its
+complete matrix. Optional selectors such as `--embedding arctic`, `--case`, or
+`--condition` are development filters. Filtered runs must be marked non-canonical
+in their manifest.
+
+## Canonical matrix
+
+The generation model, prompt, questions, context budget, top-k, scoring policy,
+and repetition count remain fixed. Only evidence access changes:
+
+| Run identity | Evidence supplied to Qwen |
+| --- | --- |
+| `closed_book` | none |
+| `literal` | fixed literal-search results |
+| `dense_rag:mini` | MiniLM FAISS results |
+| `dense_rag:bge` | BGE FAISS results |
+| `dense_rag:arctic` | Arctic Embed FAISS results |
+| `oracle` | human-verified benchmark evidence |
+
+Embedding selection applies only to `dense_rag`. Closed-book, literal, and
+oracle runs must not be duplicated under meaningless embedding labels.
+
+The initial comparison is non-agentic so it isolates evidence quality. A later
+`tool_agent` condition may let Qwen choose bounded literal or semantic search;
+that condition measures tool selection and iteration as well as retrieval.
+
+## Versioned specification
+
+Add a generation benchmark beside the retrieval benchmark:
+
+```text
+benchmarks/esp32-generation-v1/
+  cases.json
+  experiment.json
+```
+
+`experiment.json` owns the canonical model, conditions, dense embedding models,
+top-k, repetitions, prompt version, timeout, and context limits. `cases.json`
+owns typed expected answers, acceptable normalized values or units,
+answerability, and verified evidence references.
+
+## Runtime components
+
+Keep the implementation small and replaceable:
+
+```text
+scripts/generation/
+  ollama_provider.py       # chat transport and usage metrics
+  prompt_builder.py        # grounded messages and source labels
+
+scripts/evaluation/
+  conditions.py            # closed, literal, dense, oracle, later tool agent
+  runner.py                # cases x conditions x repetitions
+  scoring.py               # deterministic answer/citation/refusal checks
+  artifacts.py             # manifest, JSONL attempts, aggregate summary
+
+scripts/run_generation_eval.py
+run_generation_eval.sh
+```
+
+The interactive command and evaluator must reuse the same Ollama provider,
+prompt builder, retrieval path, and answer contract. The shell wrappers only
+locate the project environment and forward arguments; experiment behaviour
+belongs in Python and the committed specification.
+
+## Artifacts
+
+Each evaluation creates an ignored directory such as:
+
+```text
+runs/generation/2026-08-17T12-00-00Z/
+  manifest.json
+  results.jsonl
+  summary.json
+```
+
+The manifest records resolved configuration and whether the run is canonical.
+JSONL stores each completed attempt immediately so interrupted runs retain
+evidence. The summary aggregates answer accuracy, correct refusal, retrieval
+evidence hits, valid citations, latency, token use, tool calls, parsing errors,
+and runtime failures.
+
+## Implementation checkpoints
+
+1. Complete `ask_question.sh` with Arctic retrieval, grounded prompting, Qwen,
+   citations, refusal instructions, and usage metrics.
+2. Define typed generation cases by selecting narrow boolean, exact-value,
+   identifier, and unanswerable cases from the retrieval benchmark.
+3. Add the committed experiment specification and common run-result schema.
+4. Implement closed-book and oracle conditions first; save JSONL attempts.
+5. Add deterministic answer normalization, refusal, and citation scoring.
+6. Add dense-RAG evaluation for Arctic, then expand it across all registered
+   embedding indexes without duplicating embedding-independent conditions.
+7. Add fixed literal retrieval and generate the first canonical summary.
+8. Add repetitions and explicit seeds for robustness runs.
+9. Only then add a bounded structured-tool condition. Validate tool names and
+   arguments, cap calls and returned text, and never execute model-authored shell.
+10. Consider LangChain as a comparison adapter and MCP only if tools need to be
+    exposed to external clients. Neither is required by the core harness.

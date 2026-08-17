@@ -55,6 +55,30 @@ Streaming improves perceived responsiveness, not generation speed. Keep the
 non-streaming mode for simple repeatable evaluation; Ollama reports final token
 counts and timing metrics after either request completes.
 
+## Ask a grounded question
+
+After the Arctic index and `rageval-qwen` model exist, run the first end-to-end
+RAG command:
+
+```bash
+./ask_question.sh "What voltage and maximum output current can the ESP32 built-in flash voltage regulator supply?"
+```
+
+The command loads the native Arctic Embed index, retrieves three excerpts,
+builds source-labelled context, streams the answer from Ollama, prints only the
+sources Qwen cited, and reports retrieval, token, and generation metrics. Useful
+inspection options are:
+
+```bash
+./ask_question.sh --show-context "question"
+./ask_question.sh --no-stream "question"
+./ask_question.sh --embedding bge "question"
+```
+
+This is the interactive dense-RAG path, not yet the canonical evaluation runner.
+Its default generation and retrieval choices are deliberately fixed to
+`rageval-qwen` and `arctic`.
+
 Useful checks:
 
 ```bash

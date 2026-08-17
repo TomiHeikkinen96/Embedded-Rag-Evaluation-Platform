@@ -16,8 +16,8 @@ against software and hardware evidence.
 > **Current phase:** retrieval evaluation plus a thin grounded-generation slice. PDF ingestion,
 > hash-based chunk ingestion, three model-specific FAISS indexes, SQLite
 > metadata, local search, reranking, a labelled benchmark, and a switchable 3D
-> embedding explorer are implemented. Qwen 3.5 9B is selected as the first
-> local generation baseline; the generation runner is not yet implemented.
+> embedding explorer are implemented. An Arctic-to-Qwen grounded-answer CLI is
+> implemented; the repeatable generation-evaluation runner is next.
 
 ## Project path
 
@@ -65,6 +65,8 @@ flowchart LR
     FAISS --> SEARCH["Retrieve and rerank"]
     SQLITE --> SEARCH
     SEARCH --> INSPECT["CLI benchmark and 3D explorer"]
+    SEARCH --> PROMPT["Grounded prompt · source labels"]
+    PROMPT --> QWEN["Qwen 3.5 9B via Ollama"]
 ```
 
 The retrieval unit and display context are deliberately separate, and every
@@ -102,6 +104,9 @@ model creation, and the four-condition experiment are described in the
 Useful commands:
 
 ```bash
+# Ask one grounded question with Arctic retrieval and local Qwen
+./ask_question.sh "What voltage can the flash regulator supply?"
+
 # Build all missing model indexes; reprocess changed PDFs
 ./ingest_data.sh
 
@@ -133,6 +138,7 @@ and visualization data remain local and are not committed.
 - [Retrieval pipeline](docs/retrieval-pipeline.md)
 - [Evaluation design](docs/evaluation.md)
 - [Local Ollama model and generation baseline](docs/local-model.md)
+- [Generation evaluation implementation plan](docs/generation-evaluation-plan.md)
 - [Embedding explorer](docs/visualization.md)
 - [Project roadmap](docs/roadmap.md)
 - [Detailed retrieval-evaluation plan](docs/retrieval-evaluation-plan.md)

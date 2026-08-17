@@ -53,6 +53,8 @@ detail belongs in `docs/`; completed history remains available in Git.
 ## Later phases
 
 - [x] Select Qwen 3.5 9B and add a reproducible local Ollama Modelfile.
+- [x] Add `ask_question.sh` with Arctic retrieval, bounded source-labelled
+  context, local Qwen generation, citations, streaming, and usage metrics.
 - [ ] Add closed-book, bounded grep-agent, dense-RAG, and oracle-context
   generation runs using the same model and questions.
 - [ ] Add typed boolean, exact-value, identifier, and unanswerable generation
@@ -86,6 +88,9 @@ detail belongs in `docs/`; completed history remains available in Git.
   evidence-set completeness is not yet a separate metric.
 - Weak semantic matches can survive in lower ranks.
 - PCA is explanatory and cannot establish retrieval correctness.
+- Qwen's first negative-case run clearly refused but added an explanation after
+  the requested exact refusal sentence. The generation answer contract and
+  scorer must distinguish refusal intent from exact-format compliance.
 
 ## Evaluation log
 
@@ -118,3 +123,7 @@ detail belongs in `docs/`; completed history remains available in Git.
   defined four evidence-access conditions: closed-book, bounded grep agent,
   dense RAG, and oracle context. Retrieval and tool access remain harness
   concerns so every condition can use the same model definition.
+- 2026-08-17: Completed the first Arctic-to-Qwen grounded-answer path. A labelled
+  positive query returned the correct 3.3 V, 1.8 V, and 40 mA values with the
+  expected TRM page citation. The native-USB negative query refused but did not
+  obey the exact-output constraint, motivating explicit refusal-format scoring.
