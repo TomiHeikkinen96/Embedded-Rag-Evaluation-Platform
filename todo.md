@@ -38,6 +38,9 @@ detail belongs in `docs/`; completed history remains available in Git.
 - [ ] Add expected-evidence versus retrieved-result failure inspection.
 - [x] Add wrong-device distractor reporting: first intrusion rank, top-k counts,
   target precision, gold-score margin, and per-device confusion.
+- [x] Add top-level Retrieval and Generation evaluation navigation, saved-run
+  selection, partial-run recovery, timing comparison, and per-case generation
+  inspection to `view_evaluation.sh`.
 
 ## Environment and performance
 
@@ -136,3 +139,15 @@ detail belongs in `docs/`; completed history remains available in Git.
   their resolved manifest, each attempt as JSONL, and aggregate summary. The
   deterministic scorer keeps refusal intent separate from exact refusal format
   and records evidence-page retrieval hits separately from answer correctness.
+- 2026-08-17: The first 21-attempt canonical generation run recorded 14.3%
+  closed-book, 71.4% oracle, and 71.4% Arctic-RAG pass rates. Manual review found
+  both oracle failures were accepted-phrase gaps, not model errors; the GPIO
+  Arctic answer was genuinely wrong despite a gold-page hit, and the deep-sleep
+  question was underspecified relative to the multiple power modes in the
+  datasheet. Accepted variants and the deep-sleep question were tightened for
+  future runs without rewriting the historical artifact.
+- 2026-08-17: In that run, average pipeline time was 23.38 s closed-book, 5.26 s
+  oracle, and 20.17 s Arctic RAG. Arctic context retrieval averaged 0.40 s; most
+  of its 14.91 s gap to oracle came from evaluating a much larger prompt (1660
+  versus 172 average prompt tokens), not FAISS retrieval. Closed-book generated
+  much longer answers and was 3.21 s slower than Arctic RAG on average.

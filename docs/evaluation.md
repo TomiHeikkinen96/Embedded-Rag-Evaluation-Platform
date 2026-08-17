@@ -61,6 +61,12 @@ values, identifiers, multi-fact questions, corpus-negative questions, and an
 out-of-domain control. Optional `--case` and `--condition` filters create a
 non-canonical development run.
 
+`./view_evaluation.sh` exports up to five saved runs into the shared Evaluation
+page. Timing is reported as context preparation, generation request, and total
+pipeline time, plus the pipeline delta and ratio against oracle context. This
+keeps retrieval latency distinct from the model cost of evaluating a longer
+RAG prompt.
+
 This separates three failure modes:
 
 - the retriever did not find the evidence

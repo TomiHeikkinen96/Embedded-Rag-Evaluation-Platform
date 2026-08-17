@@ -16,6 +16,9 @@ echo "Generating visualization data from all registered model indexes..."
 docker compose run --rm rag python scripts/visualization/generate_embedding_data.py
 echo "Comparing retrieved results with the golden benchmark..."
 docker compose run --rm rag python scripts/visualization/generate_golden_evaluation.py
+echo "Exporting saved generation-evaluation runs..."
+mkdir -p "$PROJECT_DIR/runs/generation"
+docker compose run --rm rag python scripts/visualization/generate_generation_evaluation.py
 
 URL="http://localhost:${PORT}"
 docker compose run --rm \

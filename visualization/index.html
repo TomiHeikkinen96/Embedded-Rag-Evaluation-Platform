@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RAGeval Embedding Lab</title>
+  <title>RAGeval Evaluation Lab</title>
   <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.1.0/plotly.min.js"></script>
   <style>
     :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
@@ -11,9 +11,11 @@
     main { margin: 0 auto; max-width: 1180px; padding: 26px 24px 36px; }
     h1 { font-size: clamp(22px, 3vw, 34px); letter-spacing: -0.03em; margin: 0 0 5px; }
     .subtitle { color: light-dark(#586174, #aeb7c6); margin: 0 0 20px; }
-    .view-switcher { display: flex; gap: 8px; margin: 22px 0 8px; }
+    .evaluation-switcher, .view-switcher { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 18px; }
+    .evaluation-switcher button { border-radius: 12px; font-size: 16px; font-weight: 800; min-width: 150px; padding: 12px 18px; }
+    .view-switcher { margin: 8px 0; }
     .view-switcher button { border-radius: 10px; font-size: 14px; font-weight: 750; padding: 9px 14px; }
-    .view-panel[hidden] { display: none; }
+    .evaluation-area[hidden], .view-panel[hidden] { display: none; }
     .control-label { color: light-dark(#586174, #aeb7c6); font-size: 12px; font-weight: 700; letter-spacing: .08em; margin: 18px 0 7px; text-transform: uppercase; }
     .model-strip, .query-strip { display: flex; flex-wrap: wrap; gap: 7px; }
     .query-strip { margin-bottom: 14px; }
@@ -60,14 +62,40 @@
     .report-table button { background: none; border: 0; border-radius: 0; font: inherit; font-weight: 750; padding: 0; text-align: left; }
     .report-heading { font-size: 17px; margin: 22px 0 7px; }
     .report-caption { color: light-dark(#586174, #aeb7c6); font-size: 13px; margin: 0; }
+    .generation-status { align-items: center; background: light-dark(#eeeaff, #29233f); border-radius: 10px; display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 14px 0; padding: 12px 14px; }
+    .generation-status strong { font-size: 14px; }
+    .generation-status span { color: light-dark(#586174, #aeb7c6); font-size: 13px; }
+    .generation-run-strip { display: flex; flex-wrap: wrap; gap: 7px; }
+    .generation-run-strip button { border-radius: 10px; font-size: 13px; text-align: left; }
+    .generation-run-strip small { display: block; opacity: .75; }
+    .generation-table { min-width: 1100px; }
+    .generation-table td:first-child { font-weight: 750; }
+    .generation-case-list { display: grid; gap: 10px; margin-top: 16px; }
+    .attempt { border-left: 3px solid #2ca66f; margin: 12px 0; padding: 3px 0 3px 12px; }
+    .attempt[data-status="fail"] { border-color: #d39728; }
+    .attempt[data-status="error"] { border-color: #c4404d; }
+    .attempt-head { align-items: baseline; display: flex; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 7px; }
+    .attempt-head strong { font-size: 14px; }
+    .attempt-meta { color: light-dark(#586174, #aeb7c6); font-size: 12px; }
+    .answer-text { font-family: inherit; font-size: 13px; line-height: 1.45; margin: 7px 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .fact-list, .source-list { color: light-dark(#586174, #aeb7c6); font-size: 12px; margin: 7px 0 0; padding-left: 18px; }
+    .run-warning { color: #d39728; font-size: 13px; margin: 8px 0; }
+    @media (max-width: 640px) {
+      main { padding: 20px 14px 28px; }
+      .evaluation-switcher button { flex: 1; min-width: 120px; }
+      summary { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <main>
-    <h1>ESP32 embedding & retrieval lab</h1>
-    <p class="subtitle">Rotate, zoom, select a benchmark query, and inspect its nearest chunks.</p>
-    <nav class="view-switcher" aria-label="Evaluation view"></nav>
-    <section id="embedding-view" class="view-panel">
+    <h1>RAGeval evaluation lab</h1>
+    <p class="subtitle">Inspect retrieval evidence and compare grounded generation under controlled context conditions.</p>
+    <div class="control-label">Evaluation</div>
+    <nav class="evaluation-switcher" aria-label="Evaluation category"></nav>
+    <section id="retrieval-area" class="evaluation-area">
+      <nav class="view-switcher" aria-label="Retrieval evaluation view"></nav>
+      <section id="embedding-view" class="view-panel">
       <div class="control-label">Embedding model</div>
       <div class="model-strip" aria-label="Embedding model"></div>
       <div class="control-label">Evaluation question</div>
@@ -82,16 +110,16 @@
       <div id="embedding-plot" role="img" aria-label="Rotatable three-dimensional PCA projection of chunk and query embeddings"></div>
       <div class="selected" aria-live="polite"></div>
       <p class="note">PCA is a three-dimensional explanation of the space. Retrieval scores are calculated from the original embedding vectors.</p>
-    </section>
-    <section id="golden-view" class="view-panel" hidden>
+      </section>
+      <section id="golden-view" class="view-panel" hidden>
       <div class="control-label">Embedding model</div>
       <div class="model-strip golden-model-strip" aria-label="Golden evaluation model"></div>
       <div class="gold-summary" aria-live="polite"></div>
       <p class="gold-definition"></p>
       <div class="legend" aria-label="Result labels"><span><i class="hit"></i>gold evidence</span><span><i class="near"></i>correct page, wrong passage</span><span><i class="miss"></i>other source</span></div>
       <div class="case-list"></div>
-    </section>
-    <section id="distractor-view" class="view-panel" hidden>
+      </section>
+      <section id="distractor-view" class="view-panel" hidden>
       <h2 class="report-heading">Wrong-device intrusion</h2>
       <p class="report-caption">Lower intrusion counts are better; higher target precision and gold-minus-distractor margin are better.</p>
       <div class="report-table-wrap"><table class="report-table intrusion-table"></table></div>
@@ -99,6 +127,19 @@
       <p class="report-caption confusion-caption"></p>
       <div class="report-table-wrap"><table class="report-table confusion-table"></table></div>
       <p class="gold-definition distractor-definition"></p>
+      </section>
+    </section>
+    <section id="generation-area" class="evaluation-area" hidden>
+      <div class="control-label">Saved generation run</div>
+      <div class="generation-run-strip" aria-label="Generation evaluation run"></div>
+      <div class="generation-status" aria-live="polite"></div>
+      <div class="run-warning" aria-live="polite"></div>
+      <h2 class="report-heading">Condition comparison</h2>
+      <p class="report-caption">Recorded scores remain tied to the benchmark and Modelfile hashes in each run manifest. Pipeline time includes context preparation and generation.</p>
+      <div class="report-table-wrap"><table class="report-table generation-table"></table></div>
+      <h2 class="report-heading">Case inspection</h2>
+      <p class="report-caption">Expand a question to compare answers, fact checks, evidence hits, citations, tokens, and timing.</p>
+      <div class="generation-case-list"></div>
     </section>
   </main>
   <script>
@@ -111,12 +152,37 @@
     let selectedQuery = 0;
     let goldenPayload;
     let selectedGoldenModel = 0;
+    let generationPayload;
+    let selectedGenerationRunId;
+
+    const evaluationAreas = [
+      { id: 'retrieval-area', label: 'Retrieval' },
+      { id: 'generation-area', label: 'Generation' }
+    ];
 
     const views = [
       { id: 'embedding-view', label: 'Embedding explorer' },
       { id: 'golden-view', label: 'Golden comparison' },
       { id: 'distractor-view', label: 'Distractor intrusion' }
     ];
+
+    function setupEvaluationAreas() {
+      const navigation = document.querySelector('.evaluation-switcher');
+      evaluationAreas.forEach((area, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = area.label;
+        button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+        button.addEventListener('click', () => {
+          evaluationAreas.forEach((item, itemIndex) => {
+            document.getElementById(item.id).hidden = item.id !== area.id;
+            navigation.children[itemIndex].setAttribute('aria-pressed', item.id === area.id ? 'true' : 'false');
+          });
+          if (area.id === 'retrieval-area' && payload) Plotly.Plots.resize(plot);
+        });
+        navigation.appendChild(button);
+      });
+    }
 
     function setupViews() {
       const navigation = document.querySelector('.view-switcher');
@@ -218,6 +284,179 @@
       })[character]);
     }
 
+    function formatRate(value) {
+      return value === null || value === undefined ? '—' : percent(value);
+    }
+
+    function formatSeconds(value) {
+      return value === null || value === undefined ? '—' : `${value.toFixed(2)} s`;
+    }
+
+    function formatNumber(value, digits = 0) {
+      return value === null || value === undefined ? '—' : Number(value).toFixed(digits);
+    }
+
+    function conditionLabel(condition) {
+      return ({
+        closed_book: 'Closed book',
+        oracle: 'Oracle',
+        'dense_rag:arctic': 'Arctic RAG'
+      })[condition] || condition;
+    }
+
+    function previewText(value, limit = 700) {
+      const compact = String(value || '').replace(/\s+/g, ' ').trim();
+      return compact.length <= limit ? compact : `${compact.slice(0, limit).trim()}…`;
+    }
+
+    function runStateLabel(run) {
+      return ({
+        complete: 'Complete',
+        complete_with_errors: 'Complete with errors',
+        partial: 'Partial snapshot'
+      })[run.state] || run.state;
+    }
+
+    function oracleComparison(metrics, condition) {
+      if (!metrics || metrics.oracle_pipeline_delta_seconds === null || metrics.oracle_pipeline_delta_seconds === undefined) return '—';
+      if (condition === 'oracle') return 'baseline';
+      const delta = metrics.oracle_pipeline_delta_seconds;
+      const sign = delta >= 0 ? '+' : '';
+      const ratio = metrics.oracle_pipeline_ratio === null || metrics.oracle_pipeline_ratio === undefined
+        ? ''
+        : ` · ${metrics.oracle_pipeline_ratio.toFixed(2)}×`;
+      return `${sign}${delta.toFixed(2)} s${ratio}`;
+    }
+
+    function renderGenerationTable(run) {
+      const table = document.querySelector('.generation-table');
+      const summary = run.summary.conditions || {};
+      const conditions = run.manifest.conditions || Object.keys(summary);
+      table.innerHTML = `<thead><tr>
+        <th>Condition</th><th>Recorded pass</th><th>Answer</th><th>Refusal</th>
+        <th>Citations</th><th>Gold evidence</th><th>Context</th><th>Generation</th>
+        <th>Pipeline</th><th>vs Oracle</th><th>Prompt tokens</th><th>Output tok/s</th>
+      </tr></thead><tbody>${conditions.map(condition => {
+        const metrics = summary[condition];
+        if (!metrics) {
+          return `<tr><td>${escapeHtml(conditionLabel(condition))}</td><td colspan="11">Not completed in this snapshot</td></tr>`;
+        }
+        return `<tr>
+          <td>${escapeHtml(conditionLabel(condition))}<br><span class="case-meta">${metrics.completed}/${metrics.attempts} completed</span></td>
+          <td>${formatRate(metrics.pass_rate)}</td>
+          <td>${formatRate(metrics.answer_accuracy)}</td>
+          <td>${formatRate(metrics.unanswerable_refusal_rate)}<br><span class="case-meta">exact ${formatRate(metrics.unanswerable_exact_refusal_rate)}</span></td>
+          <td>${formatRate(metrics.citation_validity_rate)}</td>
+          <td>${formatRate(metrics.retrieval_evidence_hit_rate)}</td>
+          <td>${formatSeconds(metrics.average_context_seconds)}</td>
+          <td>${formatSeconds(metrics.average_generation_seconds)}</td>
+          <td>${formatSeconds(metrics.average_pipeline_seconds)}</td>
+          <td>${oracleComparison(metrics, condition)}</td>
+          <td>${formatNumber(metrics.average_prompt_tokens)}</td>
+          <td>${formatNumber(metrics.average_output_tokens_per_second, 2)}</td>
+        </tr>`;
+      }).join('')}</tbody>`;
+    }
+
+    function attemptHtml(record, condition) {
+      if (!record) {
+        return `<div class="attempt" data-status="error"><div class="attempt-head"><strong>${escapeHtml(conditionLabel(condition))}</strong><span class="attempt-meta">not completed in this snapshot</span></div></div>`;
+      }
+      if (record.status === 'error') {
+        return `<div class="attempt" data-status="error"><div class="attempt-head"><strong>${escapeHtml(conditionLabel(condition))}</strong><span class="attempt-meta">ERROR · ${escapeHtml(record.error_type || 'unknown')}</span></div><div class="answer-text">${escapeHtml(record.error || '')}</div></div>`;
+      }
+
+      const score = record.score;
+      const status = score.passed ? 'pass' : 'fail';
+      const pipelineSeconds = record.timing.context_seconds + record.timing.generation_seconds;
+      const evidence = record.retrieval_evidence_hit === null || record.retrieval_evidence_hit === undefined
+        ? 'gold evidence n/a'
+        : `gold evidence ${record.retrieval_evidence_hit ? 'hit' : 'miss'}`;
+      const citations = score.cited_labels.length ? score.cited_labels.join(', ') : 'none';
+      const facts = score.fact_results.length
+        ? `<ul class="fact-list">${score.fact_results.map(fact => `<li>${fact.matched ? '✓' : '○'} ${escapeHtml(fact.name)}${fact.matched_variant ? ` · ${escapeHtml(fact.matched_variant)}` : ''}</li>`).join('')}</ul>`
+        : `<ul class="fact-list"><li>Refusal intent ${score.refusal_intent ? '✓' : '○'} · exact format ${score.exact_refusal ? '✓' : '○'}</li></ul>`;
+      const sources = record.sources && record.sources.length
+        ? `<ul class="source-list">${record.sources.map(source => `<li><strong>[${escapeHtml(source.label)}] ${escapeHtml(source.title)}${source.page_number === null ? '' : ` · PDF page ${source.page_number}`}</strong> — ${escapeHtml(previewText(source.text))}</li>`).join('')}</ul>`
+        : '';
+      return `<div class="attempt" data-status="${status}">
+        <div class="attempt-head"><strong>${escapeHtml(conditionLabel(condition))} · ${score.passed ? 'PASS' : 'FAIL'}</strong><span class="attempt-meta">${formatSeconds(pipelineSeconds)} pipeline · ${record.usage.prompt_tokens} prompt + ${record.usage.output_tokens} output tokens · ${record.usage.output_tokens_per_second.toFixed(2)} tok/s · ${evidence} · citations ${escapeHtml(citations)}</span></div>
+        <div class="answer-text">${escapeHtml(record.answer)}</div>${facts}${sources}
+      </div>`;
+    }
+
+    function renderGenerationCases(run) {
+      const list = document.querySelector('.generation-case-list');
+      const conditions = run.manifest.conditions || [];
+      const recordsByCase = new Map();
+      run.records.forEach(record => {
+        if (!recordsByCase.has(record.case_id)) recordsByCase.set(record.case_id, []);
+        recordsByCase.get(record.case_id).push(record);
+      });
+      list.innerHTML = (run.manifest.case_ids || []).map(caseId => {
+        const records = recordsByCase.get(caseId) || [];
+        const completed = records.filter(record => record.status === 'completed');
+        const passed = completed.filter(record => record.score.passed).length;
+        const repetitions = run.manifest.repetitions || 1;
+        const expected = conditions.length * repetitions;
+        const first = records[0];
+        const question = first ? first.question : caseId;
+        const attempts = conditions.flatMap(condition => Array.from({length: repetitions}, (_, index) => {
+          const repetition = index + 1;
+          const record = records.find(item => item.condition === condition && item.repetition === repetition);
+          const label = repetitions > 1 ? `${conditionLabel(condition)} · repetition ${repetition}` : condition;
+          return attemptHtml(record, label);
+        })).join('');
+        return `<details>
+          <summary><span><span class="case-question">${escapeHtml(question)}</span><br><span class="case-meta">${escapeHtml(caseId)}</span></span><span class="rank">${passed}/${expected} passed</span></summary>
+          <div class="case-body">${attempts}</div>
+        </details>`;
+      }).join('');
+    }
+
+    function renderGenerationRun() {
+      const run = generationPayload.runs.find(item => item.run_id === selectedGenerationRunId);
+      if (!run || !run.available) return;
+      const status = document.querySelector('.generation-status');
+      const canonical = run.manifest.canonical ? 'canonical' : 'filtered / non-canonical';
+      status.innerHTML = `<strong>${escapeHtml(runStateLabel(run))}</strong><span>${canonical}</span><span>${run.observed_attempts}/${run.expected_attempts} attempts</span><span>${escapeHtml(run.manifest.model)}</span><span>${escapeHtml(run.manifest.prompt_version || 'prompt version unavailable')}</span>`;
+      const warnings = [...run.warnings];
+      if (run.state === 'partial') warnings.unshift('This is a partial snapshot derived from completed JSONL attempts; no evaluation rerun is required.');
+      if (run.input_drift && run.input_drift.length) warnings.unshift(`Historical inputs: current ${run.input_drift.join(', ')} differs from this run. Recorded scores were not rewritten.`);
+      document.querySelector('.run-warning').textContent = warnings.join(' ');
+      renderGenerationTable(run);
+      renderGenerationCases(run);
+    }
+
+    function setupGeneration(data) {
+      generationPayload = data;
+      const strip = document.querySelector('.generation-run-strip');
+      if (!data.available) {
+        document.querySelector('.generation-status').innerHTML = `<p class="error">${escapeHtml(data.reason)}</p>`;
+        return;
+      }
+      selectedGenerationRunId = data.selected_run_id;
+      const newestFirst = data.runs.filter(run => run.available).sort((first, second) => {
+        const firstStarted = first.manifest.started_at || first.run_id;
+        const secondStarted = second.manifest.started_at || second.run_id;
+        return secondStarted.localeCompare(firstStarted);
+      });
+      newestFirst.forEach(run => {
+        const button = document.createElement('button');
+        const started = run.manifest.started_at ? new Date(run.manifest.started_at).toLocaleString() : run.run_id;
+        button.type = 'button';
+        button.innerHTML = `${run.manifest.canonical ? 'Canonical' : 'Filtered'}<small>${escapeHtml(started)} · ${escapeHtml(runStateLabel(run))}</small>`;
+        button.setAttribute('aria-pressed', run.run_id === selectedGenerationRunId ? 'true' : 'false');
+        button.addEventListener('click', () => {
+          selectedGenerationRunId = run.run_id;
+          [...strip.children].forEach(item => item.setAttribute('aria-pressed', item === button ? 'true' : 'false'));
+          renderGenerationRun();
+        });
+        strip.appendChild(button);
+      });
+      renderGenerationRun();
+    }
+
     function renderGoldenModel() {
       const model = goldenPayload.models[selectedGoldenModel];
       const summary = document.querySelector('.gold-summary');
@@ -300,6 +539,7 @@
       document.querySelector('.distractor-definition').textContent = goldenPayload.distractor_definition;
     }
 
+    setupEvaluationAreas();
     setupViews();
 
     fetch('./embedding-data.json')
@@ -356,6 +596,16 @@
       .then(setupGolden)
       .catch(error => {
         document.querySelector('.gold-summary').innerHTML = `<p class="error">${error.message}</p>`;
+      });
+
+    fetch('./generation-evaluation.json')
+      .then(response => {
+        if (!response.ok) throw new Error('Generate generation-evaluation.json before opening this view.');
+        return response.json();
+      })
+      .then(setupGeneration)
+      .catch(error => {
+        document.querySelector('.generation-status').innerHTML = `<p class="error">${escapeHtml(error.message)}</p>`;
       });
   </script>
 </body>

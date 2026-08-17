@@ -7,8 +7,8 @@ Run:
 ```
 
 The command embeds the maintained benchmark queries with each registered model,
-reconstructs all three FAISS indexes, generates browser data, waits for the
-local server, and opens the interactive page. Pass a port when `8000` is
+reconstructs all three FAISS indexes, exports saved generation runs, waits for
+the local server, and opens the interactive page. Pass a port when `8000` is
 unavailable:
 
 ```bash
@@ -16,6 +16,29 @@ unavailable:
 ```
 
 ## What it shows
+
+The top-level **Evaluation** switch separates **Retrieval** from **Generation**.
+Retrieval contains the existing embedding, golden-evidence, and distractor
+views. Generation contains:
+
+- completed and partial run selection, preferring the latest completed
+  canonical run
+- recorded pass, answer, refusal, citation, and gold-evidence-hit rates by
+  condition
+- context, generation, total pipeline, token, and throughput comparisons
+- pipeline-time delta and ratio against oracle context
+- per-question answers, deterministic fact checks, citations, supplied
+  excerpts, and timing
+
+Generation visualization data is derived from `runs/generation/`. A finalized
+run uses its saved summary. If evaluation stopped before writing `summary.json`,
+the exporter derives a partial summary from the completed JSONL lines. Opening
+the viewer never requires rerunning the generation benchmark; it snapshots the
+available artifacts when `view_evaluation.sh` starts.
+If a run's recorded input hashes differ from the current benchmark or
+Modelfile, the page marks it as historical rather than silently rescoring it.
+
+Retrieval views show:
 
 - corpus chunk embeddings and benchmark-query embeddings
 - large MiniLM, BGE, and Arctic Embed model selectors
@@ -63,7 +86,8 @@ evidence and ranking metrics such as Recall@k and MRR.
 
 ## Planned expansion
 
-Embedding-model selection is implemented. The explorer will eventually add
+Embedding-model selection and the first generation-run dashboard are
+implemented. The explorer will eventually add
 chunking-strategy and retrieval-method controls. A metrics view below the
 geometry will compare per-question
 reciprocal rank, aggregate recall, latency, and index size. Failures should link

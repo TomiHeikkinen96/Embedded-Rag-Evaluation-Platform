@@ -9,4 +9,5 @@ venv/
 visualization/embedding-data.json
 .DS_Store
 visualization/golden-evaluation.json
+visualization/generation-evaluation.json
 runs/

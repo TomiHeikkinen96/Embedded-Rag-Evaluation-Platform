@@ -115,6 +115,11 @@ evidence. The summary aggregates answer accuracy, correct refusal, retrieval
 evidence hits, valid citations, latency, token use, tool calls, parsing errors,
 and runtime failures.
 
+The shared visualization exporter treats these artifacts as immutable. It uses
+the saved summary for finalized runs and derives a temporary summary directly
+from JSONL when a run was interrupted. Historical answers are never silently
+rescored after benchmark labels change.
+
 ## Implementation checkpoints
 
 1. [x] Complete `ask_question.sh` with Arctic retrieval, grounded prompting, Qwen,

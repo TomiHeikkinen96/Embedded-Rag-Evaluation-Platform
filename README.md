@@ -125,7 +125,7 @@ Useful commands:
 ./run_script.sh benchmark_search.py --top-k 3
 ./run_script.sh db_inspect.py stats
 
-# Regenerate and open the explorer on another port
+# Regenerate retrieval data, export generation runs, and open Evaluation
 ./view_evaluation.sh 8080
 ```
 

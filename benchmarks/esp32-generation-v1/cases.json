@@ -23,7 +23,7 @@
     },
     {
       "id": "deep-sleep-current",
-      "question": "What deep-sleep power consumption does the ESP32 Series Datasheet state?",
+      "question": "What deep-sleep power consumption does the Features section of the ESP32 Series Datasheet state?",
       "task_type": "exact_value",
       "answerability": "answerable",
       "required_facts": [
@@ -64,7 +64,7 @@
       "required_facts": [
         {"name": "GPIO34 through GPIO39", "accepted": ["GPIO34 through GPIO39", "GPIO34-GPIO39", "GPIO pins 34-39", "GPIO 34 through 39"]},
         {"name": "no output driver", "accepted": ["no output driver", "do not feature an output driver", "lack an output driver"]},
-        {"name": "no internal pull resistors", "accepted": ["no internal pull-up/pull-down", "no internal pull-up or pull-down", "lack internal pull-up and pull-down"]}
+        {"name": "no internal pull resistors", "accepted": ["no internal pull-up/pull-down", "no internal pull-up or pull-down", "lack internal pull-up and pull-down", "internal pull-up/pull-down circuitry"]}
       ],
       "oracle_sources": [
         {
@@ -82,7 +82,7 @@
       "answerability": "answerable",
       "required_facts": [
         {"name": "three UART controllers", "accepted": ["three UART controllers", "3 UART controllers", "UART0, UART1, and UART2", "UART0 through UART2"]},
-        {"name": "1024 x 8-bit shared RAM", "accepted": ["1024 × 8-bit RAM", "1024 x 8-bit RAM", "1024-byte RAM", "1024 bytes of RAM"]}
+        {"name": "1024 x 8-bit shared RAM", "accepted": ["1024 × 8-bit RAM", "1024 x 8-bit RAM", "1024 × 8-bit of RAM", "1024 x 8-bit of RAM", "1024-byte RAM", "1024 bytes of RAM"]}
       ],
       "oracle_sources": [
         {

@@ -68,6 +68,32 @@ class GenerationEvaluationTests(unittest.TestCase):
         self.assertFalse(score["exact_refusal"])
         self.assertTrue(score["passed"])
 
+    def test_recorded_oracle_phrasings_match_expected_facts(self) -> None:
+        _, cases = load_benchmark(
+            PROJECT_ROOT / "benchmarks" / "esp32-generation-v1"
+        )
+        cases_by_id = {case.case_id: case for case in cases}
+        examples = {
+            "input-only-gpio-limitations": (
+                "GPIO pins 34-39 are input-only [S1]. These pins lack an output "
+                "driver and internal pull-up/pull-down circuitry [S1]."
+            ),
+            "uart-controller-count-and-shared-ram": (
+                "The ESP32 provides three UART controllers. Their FIFOs share "
+                "1024 × 8-bit of RAM [S1]."
+            ),
+        }
+
+        for case_id, answer in examples.items():
+            with self.subTest(case_id=case_id):
+                score = score_answer(
+                    cases_by_id[case_id],
+                    answer,
+                    condition="oracle",
+                    available_source_labels={"S1"},
+                )
+                self.assertTrue(score["passed"])
+
     def test_summary_groups_conditions(self) -> None:
         record = {
             "status": "completed",

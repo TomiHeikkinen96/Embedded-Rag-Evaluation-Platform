@@ -45,6 +45,9 @@ flowchart LR
   deterministic scoring, artifact persistence, and aggregation;
   `run_generation_eval.sh` exposes the canonical local run.
 - `scripts/visualization/` exports browser-ready visualization data.
+- `scripts/visualization/generate_generation_evaluation.py` converts complete
+  or partial JSONL generation runs into the shared evaluation page without
+  modifying historical run artifacts.
 - root shell scripts provide task-oriented Docker workflows.
 
 Project-level resources remain at the root:
