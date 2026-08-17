@@ -135,10 +135,10 @@
       <div class="generation-status" aria-live="polite"></div>
       <div class="run-warning" aria-live="polite"></div>
       <h2 class="report-heading">Condition comparison</h2>
-      <p class="report-caption">Recorded scores remain tied to the benchmark and Modelfile hashes in each run manifest. Pipeline time includes context preparation and generation.</p>
+      <p class="report-caption">Overall contract combines required facts or corpus-negative refusal with citation validity. Required-fact checks measure presence only; unsupported or contradictory extra claims require manual answer review. Pipeline time includes context preparation and generation.</p>
       <div class="report-table-wrap"><table class="report-table generation-table"></table></div>
       <h2 class="report-heading">Case inspection</h2>
-      <p class="report-caption">Expand a question to compare answers, fact checks, evidence hits, citations, tokens, and timing.</p>
+      <p class="report-caption">Expand a question to inspect required-fact presence, corpus-negative refusal, unsupported extra claims, evidence hits, citations, tokens, and timing.</p>
       <div class="generation-case-list"></div>
     </section>
   </main>
@@ -307,6 +307,16 @@
       return `${average}<br><span class="case-meta">run total ${aggregate}</span>`;
     }
 
+    function requiredFactCoverage(metrics) {
+      if (!metrics.required_facts_expected) return '—';
+      return `${formatRate(metrics.required_fact_coverage_rate)}<br><span class="case-meta">${metrics.required_facts_matched}/${metrics.required_facts_expected} present</span>`;
+    }
+
+    function corpusNegativeRefusal(metrics) {
+      if (!metrics.corpus_negative_attempts) return '—';
+      return `${formatRate(metrics.unanswerable_refusal_rate)}<br><span class="case-meta">${metrics.corpus_negative_refusals}/${metrics.corpus_negative_attempts} intent · exact ${formatRate(metrics.unanswerable_exact_refusal_rate)}</span>`;
+    }
+
     function conditionLabel(condition) {
       return ({
         closed_book: 'Closed book',
@@ -344,19 +354,20 @@
       const summary = run.summary.conditions || {};
       const conditions = run.manifest.conditions || Object.keys(summary);
       table.innerHTML = `<thead><tr>
-        <th>Condition</th><th>Recorded pass</th><th>Answer</th><th>Refusal</th>
-        <th>Citations</th><th>Gold evidence</th><th>Context</th><th>Generation</th>
+        <th>Condition</th><th>Overall contract</th><th>Required facts</th><th>Corpus-negative refusal</th>
+        <th>Unsupported extra claims</th><th>Citations</th><th>Gold evidence</th><th>Context</th><th>Generation</th>
         <th>Pipeline</th><th>vs Oracle</th><th>Token usage (average)</th><th>Output tok/s</th>
       </tr></thead><tbody>${conditions.map(condition => {
         const metrics = summary[condition];
         if (!metrics) {
-          return `<tr><td>${escapeHtml(conditionLabel(condition))}</td><td colspan="11">Not completed in this snapshot</td></tr>`;
+          return `<tr><td>${escapeHtml(conditionLabel(condition))}</td><td colspan="12">Not completed in this snapshot</td></tr>`;
         }
         return `<tr>
           <td>${escapeHtml(conditionLabel(condition))}<br><span class="case-meta">${metrics.completed}/${metrics.attempts} completed</span></td>
-          <td>${formatRate(metrics.pass_rate)}</td>
-          <td>${formatRate(metrics.answer_accuracy)}</td>
-          <td>${formatRate(metrics.unanswerable_refusal_rate)}<br><span class="case-meta">exact ${formatRate(metrics.unanswerable_exact_refusal_rate)}</span></td>
+          <td>${formatRate(metrics.pass_rate)}<br><span class="case-meta">facts/refusal + citations</span></td>
+          <td>${requiredFactCoverage(metrics)}</td>
+          <td>${corpusNegativeRefusal(metrics)}</td>
+          <td>Manual review<br><span class="case-meta">not auto-scored</span></td>
           <td>${formatRate(metrics.citation_validity_rate)}</td>
           <td>${formatRate(metrics.retrieval_evidence_hit_rate)}</td>
           <td>${formatSeconds(metrics.average_context_seconds)}</td>
@@ -385,14 +396,15 @@
         : `gold evidence ${record.retrieval_evidence_hit ? 'hit' : 'miss'}`;
       const citations = score.cited_labels.length ? score.cited_labels.join(', ') : 'none';
       const facts = score.fact_results.length
-        ? `<ul class="fact-list">${score.fact_results.map(fact => `<li>${fact.matched ? '✓' : '○'} ${escapeHtml(fact.name)}${fact.matched_variant ? ` · ${escapeHtml(fact.matched_variant)}` : ''}</li>`).join('')}</ul>`
-        : `<ul class="fact-list"><li>Refusal intent ${score.refusal_intent ? '✓' : '○'} · exact format ${score.exact_refusal ? '✓' : '○'}</li></ul>`;
+        ? `<p class="case-meta">Required fact presence — this does not validate extra claims</p><ul class="fact-list">${score.fact_results.map(fact => `<li>${fact.matched ? '✓' : '○'} ${escapeHtml(fact.name)}${fact.matched_variant ? ` · ${escapeHtml(fact.matched_variant)}` : ''}</li>`).join('')}</ul>`
+        : `<p class="case-meta">Corpus-negative refusal</p><ul class="fact-list"><li>Refusal intent ${score.refusal_intent ? '✓' : '○'} · exact format ${score.exact_refusal ? '✓' : '○'}</li></ul>`;
+      const manualReview = `<p class="case-meta">Unsupported or contradictory extra claims — manual review of the answer above</p>`;
       const sources = record.sources && record.sources.length
         ? `<ul class="source-list">${record.sources.map(source => `<li><strong>[${escapeHtml(source.label)}] ${escapeHtml(source.title)}${source.page_number === null ? '' : ` · PDF page ${source.page_number}`}</strong> — ${escapeHtml(previewText(source.text))}</li>`).join('')}</ul>`
         : '';
       return `<div class="attempt" data-status="${status}">
         <div class="attempt-head"><strong>${escapeHtml(conditionLabel(condition))} · ${score.passed ? 'PASS' : 'FAIL'}</strong><span class="attempt-meta">${formatSeconds(pipelineSeconds)} pipeline · ${formatNumber(record.usage.prompt_tokens)} input + ${formatNumber(record.usage.output_tokens)} output = ${formatNumber(record.usage.total_tokens ?? (record.usage.prompt_tokens + record.usage.output_tokens))} total tokens · ${record.usage.output_tokens_per_second.toFixed(2)} tok/s · ${evidence} · citations ${escapeHtml(citations)}</span></div>
-        <div class="answer-text">${escapeHtml(record.answer)}</div>${facts}${sources}
+        <div class="answer-text">${escapeHtml(record.answer)}</div>${facts}${manualReview}${sources}
       </div>`;
     }
 

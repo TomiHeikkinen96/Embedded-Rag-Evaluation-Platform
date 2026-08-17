@@ -90,6 +90,17 @@ def enrich_summary(summary: dict, records: list[dict]) -> dict:
 
     for condition, metrics in enriched.get("conditions", {}).items():
         items = [record for record in completed if record["condition"] == condition]
+        required_fact_results = [
+            fact
+            for record in items
+            if record.get("answerability") == "answerable"
+            for fact in record.get("score", {}).get("fact_results", [])
+        ]
+        corpus_negative_items = [
+            record
+            for record in items
+            if record.get("answerability") == "unanswerable"
+        ]
         pipeline_seconds = mean(
             [
                 record["timing"]["context_seconds"]
@@ -119,6 +130,21 @@ def enrich_summary(summary: dict, records: list[dict]) -> dict:
         metrics["average_output_tokens_per_second"] = mean(
             [record["usage"]["output_tokens_per_second"] for record in items]
         )
+        metrics["required_facts_matched"] = sum(
+            bool(fact.get("matched")) for fact in required_fact_results
+        )
+        metrics["required_facts_expected"] = len(required_fact_results)
+        metrics["required_fact_coverage_rate"] = (
+            metrics["required_facts_matched"] / metrics["required_facts_expected"]
+            if metrics["required_facts_expected"]
+            else None
+        )
+        metrics["corpus_negative_refusals"] = sum(
+            bool(record.get("score", {}).get("refusal_intent"))
+            for record in corpus_negative_items
+        )
+        metrics["corpus_negative_attempts"] = len(corpus_negative_items)
+        metrics["unsupported_claims_evaluation"] = "manual_review"
         metrics["oracle_pipeline_delta_seconds"] = (
             pipeline_seconds - oracle_pipeline_seconds
             if pipeline_seconds is not None and oracle_pipeline_seconds is not None

@@ -10,7 +10,10 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
-from visualization.generate_generation_evaluation import generate_payload  # noqa: E402
+from visualization.generate_generation_evaluation import (  # noqa: E402
+    enrich_summary,
+    generate_payload,
+)
 
 
 def write_json(path: Path, value: dict) -> None:
@@ -37,6 +40,9 @@ class GenerationVisualizationTests(unittest.TestCase):
             "score": {
                 "passed": True,
                 "answer_correct": True,
+                "fact_results": [
+                    {"name": "required value", "matched": True, "matched_variant": "5"}
+                ],
                 "citations_valid": True,
                 "citation_required": condition == "oracle",
                 "refusal_intent": False,
@@ -74,6 +80,11 @@ class GenerationVisualizationTests(unittest.TestCase):
             self.assertEqual(metrics["total_prompt_tokens"], 10)
             self.assertEqual(metrics["total_output_tokens"], 5)
             self.assertEqual(metrics["total_tokens"], 15)
+            self.assertEqual(metrics["required_facts_matched"], 1)
+            self.assertEqual(metrics["required_facts_expected"], 1)
+            self.assertEqual(metrics["required_fact_coverage_rate"], 1.0)
+            self.assertEqual(metrics["corpus_negative_attempts"], 0)
+            self.assertEqual(metrics["unsupported_claims_evaluation"], "manual_review")
 
     def test_latest_complete_canonical_run_is_default(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -125,6 +136,28 @@ class GenerationVisualizationTests(unittest.TestCase):
                 [run["run_id"] for run in payload["runs"]],
                 [filtered.name, canonical.name],
             )
+
+    def test_enriched_summary_separates_corpus_negative_refusal(self) -> None:
+        record = self.completed_record("oracle")
+        record["answerability"] = "unanswerable"
+        record["score"]["fact_results"] = []
+        record["score"]["refusal_intent"] = True
+        record["score"]["exact_refusal"] = False
+        summary = {
+            "conditions": {
+                "oracle": {
+                    "unanswerable_refusal_rate": 1.0,
+                    "unanswerable_exact_refusal_rate": 0.0,
+                }
+            }
+        }
+
+        metrics = enrich_summary(summary, [record])["conditions"]["oracle"]
+
+        self.assertEqual(metrics["required_facts_expected"], 0)
+        self.assertIsNone(metrics["required_fact_coverage_rate"])
+        self.assertEqual(metrics["corpus_negative_refusals"], 1)
+        self.assertEqual(metrics["corpus_negative_attempts"], 1)
 
     def test_empty_runs_directory_has_available_false(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

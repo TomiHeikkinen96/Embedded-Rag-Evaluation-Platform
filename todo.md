@@ -160,3 +160,7 @@ detail belongs in `docs/`; completed history remains available in Git.
   10 µA in its Features section, while 100 µA refers specifically to the ULP
   sensor-monitored pattern; the Arctic failure retrieved the wrong operating
   condition. No historical benchmark artifacts were rewritten.
+- 2026-08-17: Split generation reporting into overall contract pass,
+  required-fact presence, corpus-negative refusal, and unsupported-extra-claim
+  review. Extra claims remain explicitly manual because normalized substring
+  matching cannot establish contradiction or full-answer correctness.

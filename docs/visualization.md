@@ -23,13 +23,21 @@ views. Generation contains:
 
 - completed and partial run selection, preferring the latest completed
   canonical run
-- recorded pass, answer, refusal, citation, and gold-evidence-hit rates by
-  condition
+- overall grounded-contract pass, required-fact presence, corpus-negative
+  refusal, citation, and gold-evidence-hit rates by condition
+- an explicit manual-review signal for unsupported or contradictory additional
+  claims, which deterministic phrase checks do not establish
 - context, generation, total pipeline, and throughput comparisons
 - average and whole-run input, output, and total token usage by condition
 - pipeline-time delta and ratio against oracle context
 - per-question answers, deterministic fact checks, citations, supplied
   excerpts, and timing
+
+Required-fact coverage counts accepted facts found in answers; it does not mean
+the complete answer is correct. Overall contract pass additionally applies the
+condition's refusal and citation rules. Unsupported or contradictory extra
+claims remain visible in the raw answer and are deliberately labelled for
+manual review rather than assigned a misleading automatic score.
 
 Generation visualization data is derived from `runs/generation/`. A finalized
 run uses its saved summary. If evaluation stopped before writing `summary.json`,
