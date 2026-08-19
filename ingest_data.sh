@@ -10,8 +10,9 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     echo "Usage: ./ingest_data.sh [--model mini|bge|arctic|all] [--clean] [--yes]"
     echo
     echo "Without options, source changes are processed and all missing model indexes are built."
-    echo "--model selects one registered embedding model; all is the default."
-    echo "--clean confirms before replacing generated indexes and metadata storage."
+    echo "--model MODEL  Build mini, bge, arctic, or all. Default: all."
+    echo "--clean        Confirm before replacing generated indexes and metadata storage."
+    echo "--yes          Skip the clean confirmation. Intended for explicit automation."
     exit 0
 fi
 

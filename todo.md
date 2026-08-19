@@ -1,179 +1,180 @@
-# Todo
+# Current State and Next Work
 
-This is the concise working list for the current development phase. Design
-detail belongs in `docs/`; completed history remains available in Git.
+This is the repository's single living status, limitations, and priority list.
+Design explanations belong in `docs/`, and completed implementation history
+remains available in Git.
 
-## Current milestone — labelled retrieval baseline
+## Current demonstrable system
 
-- [x] Define `benchmarks/esp32-retrieval-v1` with a hash-locked corpus manifest,
-  stable case ids, questions, answerability labels, and source evidence.
-- [x] Label an initial varied set of 20–30 cases, including exact identifiers,
-  paraphrases, table values, broad questions, ambiguous questions, and absent answers.
-- [x] Add benchmark validation that fails when a corpus hash, document page, or
-  text anchor no longer resolves.
-- [x] Calculate reciprocal rank, MRR, and Recall@1/3/5/10 for available current
-  custom-chunker embedding indexes and expose per-case ranked evidence.
-- [ ] Persist the baseline configuration, ranked results, timing, and metrics.
+- [x] Incrementally load local PDFs with changed/deleted-file detection and an
+  explicit confirmed clean rebuild.
+- [x] Create sentence-oriented and first-pass table-aware chunks while retaining
+  source document, physical PDF page, heading, and larger paragraph context.
+- [x] Build normalized MiniLM, BGE, and Arctic Embed indexes over one shared
+  chunk corpus.
+- [x] Store inspectable chunk metadata in SQLite and use an explicit
+  `(index_id, vector_id) -> chunk_id` mapping for each FAISS index.
+- [x] Retrieve a semantic candidate pool, apply chunk-only lexical reranking and
+  low-value penalties, deduplicate paragraphs, and return top-k results.
+- [x] Ask a local Qwen 3.5 9B model grounded questions through Ollama with
+  bounded source labels, citations, refusal instructions, streaming, timing,
+  and token metrics.
+- [x] Validate retrieval against a hash-locked, human-labelled ESP32 benchmark
+  using document, physical page, and text-anchor evidence.
+- [x] Compare closed-book, oracle-context, and Arctic dense-RAG generation using
+  the same typed questions and deterministic scoring.
+- [x] Persist generation manifests, JSONL attempts, summaries, partial-run
+  recovery, and historical-input warnings.
+- [x] Expose retrieval, distractor, and generation results in one evaluation
+  explorer with a frozen offline presentation backup.
+- [x] Add unit tests for grounded prompts, source labels, citation parsing,
+  answer/refusal scoring, benchmark loading, summaries, and report export.
+- [x] Document the fresh-clone question path, assignment-layer mapping,
+  evaluation commands, test command, and AI-native development workflow.
 
-## Next — configurable retrieval matrix
+## Priority 1 — retrieval quality and prompt cost
 
-- [ ] Define typed registries for chunkers and retrievers. The embedding-model
-  registry is implemented.
-- [x] Separate shared chunk identity from embedding/index identity in SQLite.
-- [x] Support several FAISS indexes without overwriting one active state.
-- [ ] Add raw 500-character chunking.
-- [ ] Add LangChain's standalone recursive-character splitter.
-- [x] Add BGE and Arctic medium retrieval candidates; replace Jina after its
-  custom model code crashed under native macOS MPS initialization.
-- [ ] Add transparent literal retrieval and zero-result reporting.
-- [ ] Compare the complete matrix using the same labelled benchmark and top-k budget.
+This is the most direct continuation of the current experiment.
 
-## Explorer and reporting
+- [ ] Persist a canonical retrieval run containing resolved configuration,
+  ranked results, timing, metrics, and artifact sizes.
+- [ ] Add deterministic literal retrieval with meaningful zero-result reporting
+  as a transparent comparison to dense retrieval.
+- [ ] Compare top-k 3 and top-k 10 generation runs using answer quality,
+  evidence hits, latency, and input-token cost—not a hand-picked example.
+- [ ] Add an explicit relevance/filtering stage so a weak top-k candidate does
+  not automatically consume prompt space merely because FAISS returned it.
+- [ ] Evaluate dynamic top-k and context compression, retaining only passages
+  that contribute distinct evidence.
+- [ ] Compare the current lexical heuristic with a learned cross-encoder
+  reranker over the same candidate pool and labelled benchmark.
+- [ ] Calibrate refusal separately from ranking: measure whether the system can
+  decide that the corpus or retrieved evidence does not support the question.
+- [ ] Add claim-level support inspection before claiming that unsupported extra
+  statements are automatically detected.
 
-- [ ] Fit PCA on corpus vectors and transform queries through fixed axes.
-- [x] Report explained variance for the displayed components.
-- [ ] Add chunker and retrieval-method controls. Model selection is implemented.
-- [ ] Add latency, chunk count, and index-size views. Per-question reciprocal
-  rank and aggregate MRR/Recall@k are implemented in the golden comparison.
-- [ ] Add expected-evidence versus retrieved-result failure inspection.
-- [x] Add wrong-device distractor reporting: first intrusion rank, top-k counts,
-  target precision, gold-score margin, and per-device confusion.
-- [x] Add top-level Retrieval and Generation evaluation navigation, saved-run
-  selection, partial-run recovery, timing comparison, and per-case generation
-  inspection to `view_evaluation.sh`.
+Reranking, filtering, and refusal are separate decisions: reranking orders
+candidates, filtering determines whether they deserve prompt budget, and the
+answer contract determines whether the supplied evidence supports a response.
 
-## Environment and performance
+## Priority 2 — small full-stack product slice
 
-- [ ] Test whether native macOS PyTorch MPS accelerates ingestion compared with
-  the Docker/Colima CPU path. Verify all three models, output equivalence,
-  memory use, and whether the extra host workflow is worth maintaining.
-- [x] Add an optional native macOS ingestion wrapper with an isolated Python
-  3.12 environment and explicit MPS availability check.
-- [ ] Consider `text-embedding-3-large` as an optional hosted retrieval
-  baseline after the local labelled baseline is recorded. Keep API cost,
-  privacy, rate limits, and weaker snapshot reproducibility explicit.
+The next user-facing version would preserve the inspectable pipeline instead of
+replacing it with a framework abstraction.
 
-## Later phases
+- [ ] Expose ingestion status, grounded questions, cited sources, and usage
+  metrics through a small typed REST API, likely FastAPI first.
+- [ ] Add a minimal TypeScript/React conversation UI with source expansion and
+  visible refusal states.
+- [ ] Preserve query and conversation state while allowing retrieval-model or
+  experiment selection.
+- [ ] Define conversation persistence, deletion, maximum history, summarization,
+  and token-budget behaviour before calling chat history "memory."
+- [ ] Keep durable agent memory distinct from conversation history and from the
+  document corpus; record provenance for anything retained across tasks.
+- [ ] Add provider interfaces and test doubles only where the API/UI boundary
+  makes replacement or deterministic integration testing useful.
 
-- [x] Select Qwen 3.5 9B and add a reproducible local Ollama Modelfile.
-- [x] Add `ask_question.sh` with Arctic retrieval, bounded source-labelled
-  context, local Qwen generation, citations, streaming, and usage metrics.
-- [x] Add closed-book, Arctic dense-RAG, and oracle-context generation runs
-  using the same model and questions. Bounded grep remains the next condition.
-- [x] Add typed exact-value, identifier, multi-fact, and unanswerable generation
-  cases with deterministic answer normalization.
-- [x] Add initial deterministic fact, refusal, citation, and evidence-page
-  checks before LLM judging. Compilation checks belong to later code tasks.
-- [ ] Define at least one hardware-observable embedded benchmark task.
-- [ ] Add broader agentic planning and tools only after the bounded grep and
-  supplied-context generation conditions are measurable.
+## Priority 3 — bounded agentic evidence loop
 
-## Completed foundation
+Dense RAG currently retrieves first and always supplies the results. The first
+agentic comparison should remain smaller and more measurable than a general
+autonomous agent.
 
-- [x] Incremental PDF ingestion with hashing, changed/deleted-file handling, and
-  explicit clean rebuild confirmation.
-- [x] Sentence-oriented and first-pass table-aware chunking with low-value filtering.
-- [x] Normalized MiniLM embeddings, FAISS indexing, and explicit SQLite vector mapping.
-- [x] Chunk-only lexical reranking, low-value penalties, and paragraph deduplication.
-- [x] Search, batch-query, database-inspection, and index-integrity tools.
-- [x] Docker/Colima workflow with task-oriented root scripts.
-- [x] Interactive 3D PCA explorer using original-space cosine scores.
-- [x] Three-model explorer with persistent question selection across model switches.
-- [x] Per-model load, embedding-throughput, index-write, and total timing output.
-- [x] Retrieval-evaluation matrix and staged architecture plan.
+- [ ] Add a bounded literal-search tool over normalized extracted corpus text.
+- [ ] Let the model choose whether to search, inspect returned evidence, refine
+  once within strict limits, and then answer or refuse.
+- [ ] Validate tool names and arguments, cap calls and returned characters, and
+  never execute model-authored shell commands.
+- [ ] Persist the complete observation trace, tool-call count, failures, and
+  recovery decisions.
+- [ ] Compare the tool loop with closed-book, oracle, and fixed dense RAG using
+  the same questions, answer contract, model, and limits.
+- [ ] Consider LangGraph or another orchestration framework only as a comparison
+  after the plain Python loop is measured and understandable.
 
-## Current known limitations
+## Priority 4 — production design questions
 
+These are important interview and architecture topics, but implementing all of
+them would exceed the intentionally small prototype.
+
+- [ ] Define authentication, authorization, tenant identity, and document/index
+  isolation for a multi-tenant service.
+- [ ] Design asynchronous, idempotent ingestion jobs with retries, progress,
+  cancellation, versioning, and safe reindexing.
+- [ ] Move local artifacts to durable managed storage with backup, migration,
+  retention, and deletion policies.
+- [ ] Add secrets management, PII/sensitive-data classification and redaction,
+  document-level access controls, and prompt-injection handling.
+- [ ] Add structured logging, traces across retrieval and generation, quality
+  metrics, cost budgets, rate limits, timeouts, and provider failure handling.
+- [ ] Run deterministic evaluation and regression thresholds in CI/CD against a
+  safe versioned corpus.
+- [ ] Define deployment, scaling, index refresh, cache, and rollback strategies.
+- [ ] Add API versioning and integration contracts suitable for a long-lived
+  system containing both modern and legacy clients.
+
+## Priority 5 — wider controlled experiments
+
+- [ ] Add raw 500-character and standalone recursive-character chunkers.
+- [ ] Define typed chunker and retriever registries around the existing embedding
+  registry and multi-index schema.
+- [ ] Compare the complete chunker, embedding, and retrieval matrix while
+  changing one declared variable at a time.
+- [ ] Fit PCA on corpus vectors and transform queries through fixed axes; keep
+  PCA explanatory rather than treating it as retrieval correctness.
+- [ ] Add latency, chunk count, size distribution, and index-size reports.
+- [ ] Benchmark native MPS ingestion against Docker/Colima CPU for time, memory,
+  and output equivalence before claiming the extra workflow is worthwhile.
+- [ ] Consider a hosted embedding or generation baseline only after recording
+  API cost, privacy, rate-limit, and snapshot-reproducibility trade-offs.
+- [ ] Define at least one hardware-observable embedded task with compilation,
+  test, device-output, or measurement evidence.
+
+## Known limitations
+
+- PDFs are local and ignored by Git; a fresh clone must supply documents before
+  ingestion, and the committed benchmark requires its exact locked editions.
 - PDF tables remain the noisiest source format.
-- `benchmark_queries.txt` remains an unlabelled legacy query list; labelled
-  ground truth lives in `benchmarks/esp32-retrieval-v1`.
-- Ambiguous and unanswerable controls are recorded but not yet scored.
-- Multi-evidence questions currently receive first-relevant-evidence ranking;
-  evidence-set completeness is not yet a separate metric.
-- Weak semantic matches can survive in lower ranks.
-- PCA is explanatory and cannot establish retrieval correctness.
-- Qwen's first negative-case run clearly refused but added an explanation after
-  the requested exact refusal sentence. The generation answer contract and
-  scorer must distinguish refusal intent from exact-format compliance.
-- Generation fact scoring uses normalized accepted substrings. It does not yet
-  understand negation or automatically detect unsupported additional claims;
-  raw answers and supplied sources remain in JSONL for inspection.
+- The current reranker is semantic similarity plus exact-token overlap and a
+  hand-written penalty, not a learned query-document relevance model.
+- Every selected top-k result enters the prompt after per-source character
+  truncation; there is no relevance gate or context compressor yet.
+- Weak semantic matches can therefore survive in lower ranks and consume tokens.
+- Ambiguous and corpus-negative retrieval controls are recorded but not yet
+  included in aggregate retrieval scoring.
+- Multi-evidence questions use first-relevant-evidence ranking; evidence-set
+  completeness is not a separate metric.
+- Generation fact scoring uses normalized accepted substrings. It does not
+  understand negation or prove that additional free-form claims are supported.
+- Refusal is instructed and evaluated, but the interactive pipeline still
+  relies on the model to judge whether retrieved excerpts establish an answer.
+- Unit tests currently emphasize generation contracts and reporting; chunking,
+  ingestion, retrieval ranking, vector mapping, and mocked end-to-end behaviour
+  need broader automated coverage.
+- The current CLI is local and single-user. There is no API, conversation UI,
+  authentication, tenant isolation, or durable conversation memory.
 
-## Evaluation log
+## Evidence retained from completed experiments
 
-- 2026-08-12: Inventoried the three PDFs under `data/`. Although they were
-  reached from the ESP-IDF v4.3 Hardware Reference page, the rolling downloads
-  are Datasheet v5.3, TRM v5.8, and SoC Errata v3.0—not a v4.3 snapshot.
-- 2026-08-12: Converted the eight legacy search fragments into seven active
-  human-verifiable cases and one `needs_review` case. `maximum current` is not
-  scoreable without specifying the current domain and operating condition.
-- 2026-08-12: Added a modular top-level evaluation view switcher and golden
-  comparison. Strict hits require document, physical PDF page, and text anchor;
-  correct-page/wrong-passage results remain visible as near misses.
-- 2026-08-12: Expanded retrieval v1 to 28 cases: 25 active positives across all
-  three PDFs, one ambiguous control, and two corpus-negative controls. New
-  labels cover exact identifiers, paraphrases, multi-fact questions, tables,
-  conceptual explanations, and hardware errata diagnosis.
-- 2026-08-12: Added PIC24FJ, STM32F446, and ATmega328P datasheets as deliberate
-  wrong-device distractors. The corpus now has 30,959 chunks: 14,353 ESP32
-  target chunks and 16,606 distractor chunks. ESP32 golden labels remain the
-  correct scope; separate labels would be needed only for a multi-device task.
-- 2026-08-12: Replaced the eight terse legacy PCA queries with six representative
-  benchmark-style questions and added a third GUI view for distractor intrusion.
-  Counts report corpus noise directly; exact evidence correctness remains in the
-  separate golden comparison.
-- 2026-08-12: Native MPS ingestion completed MiniLM and BGE over 14,353 chunks,
-  then Jina's remote custom model code caused a process-level segmentation fault
-  during model initialization. Replaced it with standard-BERT Arctic Embed M
-  v1.5 so the three-model baseline remains repeatable on Apple Silicon.
-- 2026-08-15: Selected Qwen 3.5 9B as the cheap local generation baseline and
-  defined four evidence-access conditions: closed-book, bounded grep agent,
-  dense RAG, and oracle context. Retrieval and tool access remain harness
-  concerns so every condition can use the same model definition.
-- 2026-08-17: Completed the first Arctic-to-Qwen grounded-answer path. A labelled
-  positive query returned the correct 3.3 V, 1.8 V, and 40 mA values with the
-  expected TRM page citation. The native-USB negative query refused but did not
-  obey the exact-output constraint, motivating explicit refusal-format scoring.
-- 2026-08-17: Added the first generation evaluation runner with seven committed
-  cases and closed-book, oracle, and Arctic dense-RAG conditions. Runs persist
-  their resolved manifest, each attempt as JSONL, and aggregate summary. The
-  deterministic scorer keeps refusal intent separate from exact refusal format
-  and records evidence-page retrieval hits separately from answer correctness.
-- 2026-08-17: The first 21-attempt canonical generation run recorded 14.3%
-  closed-book, 71.4% oracle, and 71.4% Arctic-RAG pass rates. Manual review found
-  both oracle failures were accepted-phrase gaps, not model errors; the GPIO
-  Arctic answer was genuinely wrong despite a gold-page hit, and the deep-sleep
-  question was underspecified relative to the multiple power modes in the
-  datasheet. Accepted variants and the deep-sleep question were tightened for
-  future runs without rewriting the historical artifact.
-- 2026-08-17: In that run, average pipeline time was 23.38 s closed-book, 5.26 s
-  oracle, and 20.17 s Arctic RAG. Arctic context retrieval averaged 0.40 s; most
-  of its 14.91 s gap to oracle came from evaluating a much larger prompt (1660
-  versus 172 average prompt tokens), not FAISS retrieval. Closed-book generated
-  much longer answers and was 3.21 s slower than Arctic RAG on average.
-- 2026-08-17: Generation reporting now exposes average and whole-run input,
-  output, and total token counts per condition. Existing artifacts remain
-  compatible because missing total counts are derived from input plus output.
-- 2026-08-17: Rechecked two generation failures against the local PDFs. The
-  classic ESP32 Datasheet and TRM contain no native USB D+/D-/OTG assignment,
-  so the closed-book GPIO 15/GPIO 4 answer is unsupported. The Datasheet states
-  10 µA in its Features section, while 100 µA refers specifically to the ULP
-  sensor-monitored pattern; the Arctic failure retrieved the wrong operating
-  condition. No historical benchmark artifacts were rewritten.
-- 2026-08-17: Split generation reporting into overall contract pass,
-  required-fact presence, corpus-negative refusal, and unsupported-extra-claim
-  review. Extra claims remain explicitly manual because normalized substring
-  matching cannot establish contradiction or full-answer correctness.
-- 2026-08-17: Hardened `view_evaluation.sh` against orphaned server containers.
-  The viewer now owns one deterministic labelled container, replaces only that
-  verified container on restart, removes it explicitly on `Ctrl+C`, and checks
-  for unrelated HTTP port conflicts before expensive data generation.
-- 2026-08-17: Added a non-canonical `--top-k` generation-evaluation override so
-  Arctic retrieval depth can be compared without editing the committed
-  top-three baseline. Resolved depth is printed and persisted in each run
-  manifest; closed-book and oracle can be omitted from depth-only comparisons.
-- 2026-08-17: Added `create_snapshot_from_current_eval.sh` for timestamped
-  frozen evaluation snapshots and a Python-only
-  fallback viewer for interview safety. The snapshot contains the already
-  exported HTML/JSON plus a local pinned Plotly asset, so it performs no model,
-  index, Docker, Ollama, or network work when presented.
+- **2026-08-12 — labelled retrieval:** expanded retrieval v1 to 28 cases: 25
+  active positives, one ambiguous control, and two corpus-negative controls.
+  Labels cover exact identifiers, paraphrases, multi-fact questions, tables,
+  conceptual explanations, and errata diagnosis.
+- **2026-08-12 — distractors:** added three non-ESP32 datasheets. The recorded
+  corpus contained 30,959 chunks: 14,353 ESP32 target chunks and 16,606
+  deliberate distractor chunks.
+- **2026-08-12 — Apple Silicon:** MiniLM and BGE completed on MPS, but Jina's
+  remote custom model code crashed during native MPS initialization after
+  working on CPU. Arctic Embed replaced it with a standard, repeatable loading
+  path.
+- **2026-08-17 — first canonical generation run:** 21 attempts recorded 14.3%
+  closed-book, 71.4% oracle, and 71.4% Arctic-RAG contract pass rates. Manual
+  review showed that two oracle failures were scorer-label gaps, while one dense
+  RAG answer was genuinely wrong despite retrieving a gold page.
+- **2026-08-17 — prompt cost:** Arctic retrieval averaged 0.40 seconds, while
+  most of the latency difference from oracle came from evaluating a much larger
+  prompt: 1,660 versus 172 average prompt tokens.
+- **2026-08-17 — evaluation discipline:** historical run artifacts were kept
+  immutable when questions and accepted variants were tightened; unsupported
+  extra claims remain an explicit manual-review signal.

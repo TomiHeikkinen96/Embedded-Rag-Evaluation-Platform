@@ -1,72 +1,67 @@
-# Roadmap
+# Possible Future Directions
 
-The roadmap deliberately builds measurement before autonomy. Later phases may
-change as experiments reveal what is useful.
+This is a design horizon, not a second status tracker. The living implementation
+state and priorities are maintained only in [`todo.md`](../todo.md).
 
-## Phase 1 — Context and retrieval evaluation
+## Improve evidence selection
 
-Status: current.
+The immediate experimental direction is to spend prompt budget more carefully:
 
-Implemented foundation:
+- compare literal, dense, and eventually hybrid retrieval
+- compare the transparent lexical heuristic with a learned reranker
+- add relevance filtering, dynamic top-k, and context compression
+- measure answer quality, refusal, latency, and token cost together
 
-- incremental PDF ingestion and deletion handling
-- custom prose/table-aware chunking
-- normalized MiniLM embeddings and FAISS indexing
-- explicit SQLite vector-to-chunk metadata
-- retrieval, heuristic reranking, batch queries, and inspection tools
-- interactive 3D embedding explorer
+This work should use the existing labelled corpus and saved-run discipline so a
+new technique is not accepted merely because one demonstration looks better.
 
-Completion target:
+## Add a small product interface
 
-- human-labelled ESP32 retrieval benchmark
-- three chunking strategies and three embedding models
-- literal baseline plus dense retrieval
-- reproducible run artifacts with MRR, Recall@k, latency, and storage costs
-- explorer controls and failure inspection
+A minimal REST API and TypeScript/React conversation UI could expose grounded
+questions, citations, refusal, ingestion status, and usage metrics. Conversation
+history would require explicit limits, summarization, retention, deletion, and
+provenance rules rather than an unbounded list of messages.
 
-## Phase 2 — Grounded generation evaluation
+This stage should preserve the current replaceable retrieval, prompt, provider,
+and evaluation modules instead of hiding them behind a large framework.
 
-Status: next thin implementation slice.
+## Compare a bounded agentic loop
 
-- establish Qwen 3.5 9B through the reproducible Ollama Modelfile
-- compare closed-book, bounded grep-agent, dense-RAG, and oracle-context conditions
-- begin with boolean, exact-value, identifier, and unanswerable questions
-- record prompts, model versions, settings, context, output, latency, and failures
-- score required facts, unsupported claims, citations, and refusal behaviour
+The first agentic condition should answer a narrow experimental question: does
+letting the model decide when and how to inspect the corpus improve results over
+fixed retrieve-then-read RAG?
 
-Completion means retrieval failure, model capability, and context-use failure can
-be distinguished in a saved experiment.
+It could expose literal and dense retrieval as validated tools, cap calls and
+returned text, persist observations, and allow a bounded refinement before the
+model answers or refuses. The same model, questions, and scoring contract should
+remain fixed so tool-selection and iteration are the variables being measured.
 
-## Phase 3 — Hardware-verified engineering tasks
+## Validate engineering outcomes
 
-Status: planned.
+Later embedded tasks could be checked through increasingly strong evidence:
 
-- define small embedded coding tasks with deterministic build/test criteria
-- compile generated code and run available automated tests
-- add simulator or hardware-in-the-loop checks where they provide real evidence
-- capture observations such as serial logs, timing, logic traces, or measurements
-- retain human review for physical behaviour that cannot be reduced safely to one metric
+1. deterministic required-fact and static checks
+2. compilation and unit or integration tests
+3. simulator or hardware-in-the-loop observations
+4. serial logs, timing, logic traces, or physical measurements
+5. human engineering review where automation cannot establish behaviour
 
-Completion means at least one end-to-end task is judged by observable engineering
-behaviour rather than text similarity alone.
+The goal would be to measure whether grounded context improves actual
+engineering work, not merely whether an answer sounds plausible.
 
-## Phase 4 — Agentic engineering harness
+## Production hardening
 
-Status: exploratory.
-
-- expose retrieval, build, test, and observation as explicit tools
-- add planning and bounded iteration beyond the initial one-tool grep condition
-- persist traces and failure states
-- test recovery after failed builds or incorrect assumptions
-- compare a transparent custom loop with selected framework implementations
-
-Completion means the system can attempt, observe, and revise an embedded task
-while every consequential step remains inspectable.
+A real multi-user service would need authentication, tenant and document
+isolation, asynchronous ingestion, durable storage, secrets and privacy controls,
+observability, cost limits, provider failure handling, evaluation gates,
+deployment, scaling, migrations, and rollback. These concerns are deliberately
+left outside the small local prototype but should be addressed before treating
+it as a production feature.
 
 ## Non-goals
 
 - claiming a generally superior coding agent from one corpus
-- treating a framework integration as evaluation
-- using an LLM judge as the only source of truth
-- hiding failed or zero-result benchmark cases
-- adding orchestration before the underlying experiment needs it
+- presenting framework integration as evidence of retrieval quality
+- using an LLM judge as the only oracle
+- hiding failed, ambiguous, or zero-result cases
+- adding autonomy before its tools and observations can be measured

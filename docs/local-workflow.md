@@ -25,19 +25,69 @@ Rebuild the image after changing `Dockerfile` or `requirements.txt`. Python
 source under `scripts/` is bind-mounted, so ordinary code edits do not require
 an image rebuild.
 
-## High-level commands
+## Command defaults at a glance
+
+The root shell files are thin environment wrappers. They locate the repository,
+select Docker or the native Python environment, and forward arguments to the
+Python entry point. Retrieval, generation, and evaluation behaviour remains in
+the Python modules and committed experiment specification.
+
+| Command | Default with no optional arguments | Important selectors |
+| --- | --- | --- |
+| `./ingest_data.sh` | Incremental Docker ingestion; ensure all `mini`, `bge`, and `arctic` indexes | `--model`, `--clean`, `--yes` |
+| `./local_ingest_data.sh` | Same ingestion selection using native Apple MPS | `--model`, `--clean`, `--yes`; `RAGEVAL_PYTHON` selects the environment-creation executable |
+| `./run_script.sh SCRIPT` | Run one `scripts/` Python entry point in Docker | Every later argument is forwarded to that script |
+| `./ask_question.sh QUESTION` | Arctic retrieval, top 3, `rageval-qwen`, streaming, local Ollama URL | `--embedding`, `--top-k`, `--model`, `--show-context`, `--no-stream`, `--url` |
+| `./run_generation_eval.sh` | Run the complete committed canonical experiment | `--condition`, `--case`, `--repetitions`, `--top-k`, `--model`, `--benchmark-dir`, `--url` |
+| `./view_evaluation.sh` | Regenerate current reports and serve them on port `8000` | Optional positional port |
+| `./create_snapshot_from_current_eval.sh` | Freeze the currently exported explorer into a timestamped offline snapshot | No options |
+| `./backup_view_evaluation.sh` | Serve the newest frozen snapshot on port `8000` and open it | Optional positional port; `RAGEVAL_NO_OPEN=1` suppresses browser opening |
+
+Use `--help` on the ingestion wrappers and Python-backed commands for the
+executable option descriptions. For a Docker tool, pass help through the generic
+wrapper, for example `./run_script.sh search_index.py --help`.
+
+## Model-selection rule
+
+Each embedding alias has its own FAISS index. A consumer can only select an
+index that ingestion has built. The defaults intentionally differ by task:
+
+- ingestion uses `all`, producing every registered index;
+- `search_index.py`, `benchmark_search.py`, and model-specific database
+  inspection default to the fast `mini` baseline;
+- `ask_question.sh` defaults to the current grounded-generation path,
+  `arctic`.
+
+Therefore the no-option ingestion command supports every downstream default.
+If you intentionally ingest only one model, select the same alias later:
 
 ```bash
-# Update chunks and build all missing model indexes
+# Build only BGE.
+./local_ingest_data.sh --model bge
+
+# Use the BGE index for a grounded answer.
+./ask_question.sh --embedding bge "question"
+
+# Use the BGE index for retrieval-only inspection in Docker.
+./run_script.sh search_index.py --model bge "question"
+```
+
+## Ingestion commands
+
+```bash
+# Default: incremental update and all registered model indexes.
 ./ingest_data.sh
 
-# Build one model-specific index
+# Default for --model: all. Choices: mini, bge, arctic, all.
 ./ingest_data.sh --model bge
 
-# Clean rebuild with confirmation
+# Default: preserve generated storage. --clean asks before replacing it.
 ./ingest_data.sh --clean
 
-# Generate and open the evaluation explorer
+# Skip the clean confirmation only in deliberate automation.
+./ingest_data.sh --clean --yes
+
+# Default port: 8000.
 ./view_evaluation.sh
 ./view_evaluation.sh 8080
 ```
@@ -58,8 +108,13 @@ python3.12 --version
 Then run ingestion without starting Colima:
 
 ```bash
+# Default: all models, incremental ingestion, RAGEVAL_DEVICE=mps.
 ./local_ingest_data.sh
+
+# Build only BGE.
 ./local_ingest_data.sh --model bge
+
+# Clean rebuild with confirmation.
 ./local_ingest_data.sh --clean
 ```
 
@@ -92,6 +147,68 @@ environment:
 
 The wrappers resolve the project directory themselves and can be invoked from a
 different working directory.
+
+## Grounded question command
+
+The native question wrapper requires the `.venv` created by
+`local_ingest_data.sh` and a running Ollama service:
+
+```bash
+# Defaults: --embedding arctic --model rageval-qwen --top-k 3, streaming on,
+# and Ollama at http://localhost:11434/api/chat.
+./ask_question.sh "question"
+
+# Select another index that has already been built.
+./ask_question.sh --embedding mini "question"
+
+# Inspect the exact retrieved excerpts and increase retrieval depth.
+./ask_question.sh --show-context --top-k 10 "question"
+
+# Wait for one complete response instead of streaming it.
+./ask_question.sh --no-stream "question"
+
+# Show all options and their current executable defaults.
+./ask_question.sh --help
+```
+
+`--model` selects the Ollama generation model and `--embedding` selects the
+retrieval index; they are independent choices.
+
+## Generation evaluation commands
+
+```bash
+# Default: every case and condition from the committed experiment specification.
+./run_generation_eval.sh
+
+# Repeat --case or --condition to select several. Filtered runs are non-canonical.
+./run_generation_eval.sh --case flash-voltage-regulator --condition oracle
+
+# Defaults come from experiment.json; an override is recorded as non-canonical.
+./run_generation_eval.sh --condition dense_rag:arctic --top-k 10
+
+# Show the full evaluator interface.
+./run_generation_eval.sh --help
+```
+
+The canonical model, conditions, top-k, repetitions, prompt version, timeout,
+and context limits live in
+[`benchmarks/esp32-generation-v1/experiment.json`](../benchmarks/esp32-generation-v1/experiment.json),
+so a baseline run is reproducible without duplicating those values in shell.
+
+## Explorer and frozen snapshot commands
+
+```bash
+# Default port: 8000. Regenerates data, starts a managed Docker server, opens it.
+./view_evaluation.sh
+./view_evaluation.sh 8080
+
+# No options: copy the current exported data and bundle Plotly for offline use.
+./create_snapshot_from_current_eval.sh
+
+# Default: newest snapshot, port 8000, browser opening enabled.
+./backup_view_evaluation.sh
+RAGEVAL_NO_OPEN=1 ./backup_view_evaluation.sh 8080
+```
 
 ## Local files
 

@@ -16,6 +16,9 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     echo
     echo "Runs ingestion natively on macOS using the Apple GPU through PyTorch MPS."
     echo "On first use, creates .venv with python3.12 and installs requirements.txt."
+    echo "--model MODEL  Build mini, bge, arctic, or all. Default: all."
+    echo "--clean        Confirm before replacing generated indexes and metadata storage."
+    echo "--yes          Skip the clean confirmation. Intended for explicit automation."
     echo "Set RAGEVAL_PYTHON to override the Python command used to create .venv."
     exit 0
 fi

@@ -132,20 +132,18 @@ the saved summary for finalized runs and derives a temporary summary directly
 from JSONL when a run was interrupted. Historical answers are never silently
 rescored after benchmark labels change.
 
-## Implementation checkpoints
+## Extension order
 
-1. [x] Complete `ask_question.sh` with Arctic retrieval, grounded prompting, Qwen,
-   citations, refusal instructions, and usage metrics.
-2. [x] Define typed generation cases by selecting narrow boolean, exact-value,
-   identifier, and unanswerable cases from the retrieval benchmark.
-3. [x] Add the committed experiment specification and common run-result schema.
-4. [x] Implement closed-book and oracle conditions first; save JSONL attempts.
-5. [x] Add deterministic answer normalization, refusal, and citation scoring.
-6. [x] Add dense-RAG evaluation for Arctic. Next expand it across all registered
-   embedding indexes without duplicating embedding-independent conditions.
-7. Add fixed literal retrieval and generate the first canonical summary.
-8. Add repetitions and explicit seeds for robustness runs.
-9. Only then add a bounded structured-tool condition. Validate tool names and
+When the implemented baseline is extended, preserve this comparison order:
+
+1. Add fixed literal retrieval without duplicating embedding-independent runs.
+2. Expand dense RAG across registered embedding indexes using the same cases and
+   prompt contract.
+3. Add repetitions and explicit seeds for robustness runs.
+4. Only then add a bounded structured-tool condition. Validate tool names and
    arguments, cap calls and returned text, and never execute model-authored shell.
-10. Consider LangChain as a comparison adapter and MCP only if tools need to be
-    exposed to external clients. Neither is required by the core harness.
+5. Consider LangChain as a comparison adapter and MCP only if tools need to be
+   exposed to external clients. Neither is required by the core harness.
+
+This is experiment-design guidance. Current status and priority are maintained
+only in [`todo.md`](../todo.md).

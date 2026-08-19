@@ -1,8 +1,10 @@
-# Retrieval Evaluation Plan
+# Retrieval Evaluation Comparison Design
 
-Status: active Phase 1 work. The custom chunker builds MiniLM, BGE, and Arctic
-Embed indexes and the explorer compares them. Labelled metrics, alternate
-chunkers, and literal retrieval remain planned.
+This document preserves the detailed comparison design. The custom chunker,
+MiniLM/BGE/Arctic indexes, labelled evidence metrics, and model comparison views
+exist; alternate chunkers, literal retrieval, and the complete persisted matrix
+remain follow-up experiments. Consult [`todo.md`](../todo.md) for the single
+living implementation status.
 
 ## Question
 
@@ -131,10 +133,11 @@ Labels identify stable evidence, not random chunk ids. Chunk boundaries vary by
 strategy; the underlying source evidence does not. Benchmark validation should
 fail for human review if a document, page, or text anchor no longer resolves.
 
-The seed converts seven sufficiently specific legacy queries into active cases
-and preserves `maximum current` as `needs_review`: the corpus contains several
-different maximum-current concepts, so assigning one relevant page would hide
-an annotation error. The initial 20–30 active cases should include:
+The benchmark grew from seven sufficiently specific legacy queries into 25
+active positive cases, while preserving ambiguous and corpus-negative controls.
+The legacy `maximum current` prompt remains unsuitable without a current domain
+and operating condition: assigning one relevant page would hide an annotation
+error. The benchmark includes:
 
 - exact identifiers and quoted terminology
 - paraphrases without literal word overlap

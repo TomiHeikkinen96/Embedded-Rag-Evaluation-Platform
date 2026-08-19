@@ -4,24 +4,26 @@ The project evaluates layers separately so a successful-looking answer does not
 hide a retrieval failure, and a retrieval failure is not blamed on the language
 model.
 
-## Retrieval evaluation — current focus
+## Retrieval evaluation
 
-The planned benchmark labels the source evidence needed for each question. A
-retriever is then measured by whether that evidence appears in its ranked
-results.
+The committed retrieval benchmark labels the source evidence needed for each
+question. A retriever is measured by whether that evidence appears in its
+ranked results. The living status of additional comparison conditions is kept
+in [`todo.md`](../todo.md).
 
-Initial metrics:
+Current labelled metrics:
 
 - Recall@1, Recall@3, Recall@5, and Recall@10
 - reciprocal rank per question and mean reciprocal rank (MRR)
-- zero-result rate for literal search
-- ingestion time, query latency, chunk count, and index size
+
+Planned comparison metrics include literal-search zero-result rate, ingestion
+time, query latency, chunk count, and index size.
 
 Cosine similarity is a diagnostic, not correctness. Raw cosine values should
 not be compared as if they were a universal accuracy score across embedding
 models.
 
-The first comparison matrix will vary:
+The wider comparison matrix is designed to vary:
 
 - chunking: custom, recursive-character baseline, and raw 500-character windows
 - embeddings: small general and two medium retrieval models with different
@@ -36,7 +38,7 @@ Labels should identify durable evidence using document, page, and verified text
 anchors—not random chunk ids. Chunk boundaries change between strategies, while
 the underlying evidence does not.
 
-The benchmark should contain exact terms, paraphrases, table questions, broad
+The benchmark contains exact terms, paraphrases, table questions, broad
 questions, ambiguous questions, and questions not answered by the corpus.
 Negative cases and failures remain visible in reports.
 
