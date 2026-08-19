@@ -7,12 +7,14 @@
 - Bash for the convenience wrappers
 - `curl` for the evaluation-server readiness check
 
-The Python tools run inside the container. Windows users can use Docker Desktop
-and invoke the underlying Compose/Python commands; the shell wrappers are
-conveniences rather than the only program interface.
+The portable ingestion, retrieval-inspection, and explorer-export tools run
+inside the container. Windows users can use Docker Desktop and invoke the
+underlying Compose/Python commands; the shell wrappers are conveniences rather
+than the only program interface.
 
-Native Apple GPU ingestion is an optional parallel macOS workflow. It requires
-Homebrew Python 3.12 and does not replace the Docker workflow.
+Native Apple GPU ingestion, grounded questions, and generation evaluation form
+an optional parallel macOS workflow. They require Homebrew Python 3.12 and do
+not replace the Docker workflow.
 
 ## First setup
 
@@ -39,7 +41,7 @@ the Python modules and committed experiment specification.
 | `./run_script.sh SCRIPT` | Run one `scripts/` Python entry point in Docker | Every later argument is forwarded to that script |
 | `./ask_question.sh QUESTION` | Arctic retrieval, top 3, `rageval-qwen`, streaming, local Ollama URL | `--embedding`, `--top-k`, `--model`, `--show-context`, `--no-stream`, `--url` |
 | `./run_generation_eval.sh` | Run the complete committed canonical experiment | `--condition`, `--case`, `--repetitions`, `--top-k`, `--model`, `--benchmark-dir`, `--url` |
-| `./view_evaluation.sh` | Regenerate current reports and serve them on port `8000` | Optional positional port |
+| `./view_evaluation.sh` | Regenerate reports in Docker and serve them from a managed container on port `8000` | Optional positional port |
 | `./create_snapshot_from_current_eval.sh` | Freeze the currently exported explorer into a timestamped offline snapshot | No options |
 | `./backup_view_evaluation.sh` | Serve the newest frozen snapshot on port `8000` and open it | Optional positional port; `RAGEVAL_NO_OPEN=1` suppresses browser opening |
 
@@ -196,6 +198,13 @@ and context limits live in
 so a baseline run is reproducible without duplicating those values in shell.
 
 ## Explorer and frozen snapshot commands
+
+`view_evaluation.sh` is a Docker workflow even when ingestion and generation
+evaluation ran natively. It reads the shared indexes and saved runs, regenerates
+the explorer JSON in the Compose environment, and serves the UI from a managed
+container. On macOS, start Colima first. The container has a separate Hugging
+Face cache from `.venv`, so its first export may need to download the embedding
+models used to encode benchmark queries.
 
 ```bash
 # Default port: 8000. Regenerates data, starts a managed Docker server, opens it.

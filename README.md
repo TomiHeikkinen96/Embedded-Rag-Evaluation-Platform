@@ -58,21 +58,22 @@ data/
 ```
 
 The folder is present in a fresh clone, but PDFs are intentionally ignored by
-Git. The committed ESP32 benchmark expects the exact document editions recorded
-in [the corpus inventory](docs/corpus-inventory.md); arbitrary PDFs are fine for
-asking questions but do not satisfy those benchmark labels.
+Git. For ordinary RAG use, these can be any PDFs you want to question. To run
+the repository's corpus-specific benchmark, follow the document setup in
+[Evaluation](#evaluation-instead-of-a-hand-picked-demo).
 
 ### 3. Build the Arctic retrieval index with the Apple GPU
 
 ```bash
-# Default: build all registered indexes. The quickstart selects Arctic because
-# ask_question.sh uses Arctic unless --embedding chooses another built index.
+# ask_question.sh uses Arctic by default.
 ./local_ingest_data.sh --model arctic
 ```
 
 On first use, the wrapper creates `.venv`, installs the pinned Python
 dependencies, downloads the public embedding model, verifies PyTorch MPS, and
-builds the index. Later runs reuse unchanged documents and existing artifacts.
+builds the index. This native path lets embedding use the Apple GPU; Docker is
+portable but CPU-only on macOS because its Linux VM cannot access Metal. Later
+runs reuse unchanged documents and existing artifacts.
 
 ### 4. Create the local generation model
 
@@ -228,6 +229,12 @@ architectural decision.
 
 ## Evaluation instead of a hand-picked demo
 
+The committed golden dataset requires the exact ESP32 document editions listed
+in the [corpus inventory](docs/corpus-inventory.md). Add those PDFs to `data/`
+and build the indexes before running the comparison. Other PDFs still work for
+ordinary RAG questions, but they will not match the benchmark's document, page,
+and text-evidence labels.
+
 Run the committed generation comparison:
 
 ```bash
@@ -249,8 +256,17 @@ supported.
 Open the retrieval and generation reports with:
 
 ```bash
+# First-time Docker setup on the current macOS environment:
+colima start
+docker compose build
+
 ./view_evaluation.sh
 ```
+
+The evaluation runner itself uses the native `.venv`, MPS retrieval, and local
+Ollama model. The explorer command above then uses Docker to regenerate the
+report JSON and serve the browser UI. Docker has its own model cache, separate
+from the native Hugging Face cache.
 
 For presentation safety, the current dashboard can be frozen and served without
 Docker, model loading, Ollama, indexes, source PDFs, or internet access:
