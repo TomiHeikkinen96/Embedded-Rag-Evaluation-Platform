@@ -14,6 +14,7 @@ needed to understand, run, and extend the experiment.
 ## Evaluation and direction
 
 - [Evaluation](evaluation.md) — retrieval and generation metrics, ground truth, and failure attribution
+- [AI-assisted development example](example_AI_assisted_development.md) — simulated, repository-grounded feature-planning discussion
 - [Local model](local-model.md) — Ollama setup, Modelfile, and generation conditions
 - [Generation evaluation runner](generation-evaluation-plan.md) — canonical commands, matrix, artifacts, and expansion checkpoints
 - [Future directions](roadmap.md) — possible product, agentic, and production evolution

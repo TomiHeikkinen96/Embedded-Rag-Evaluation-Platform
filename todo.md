@@ -116,11 +116,25 @@ them would exceed the intentionally small prototype.
 
 ## Priority 5 — wider controlled experiments
 
-- [ ] Add raw 500-character and standalone recursive-character chunkers.
+- [ ] Add a clean-built `raw500` evaluation condition: sequential windows of
+  at most 500 characters, no overlap, no physical-page crossing, and retained
+  source/page evidence metadata.
+- [ ] Add a standalone recursive-character chunker after the raw-500 baseline.
 - [ ] Define typed chunker and retriever registries around the existing embedding
   registry and multi-index schema.
 - [ ] Compare the complete chunker, embedding, and retrieval matrix while
   changing one declared variable at a time.
+- [ ] Separate generated-artifact lifecycles without duplicating pipeline code:
+  evaluation builds should rechunk a locked corpus into disposable,
+  reproducible condition artifacts, while the generic ingestion demonstration
+  should retain SHA-256 changed/deleted-file tracking for one active pipeline.
+- [ ] Give evaluation and incremental ingestion distinct storage namespaces and
+  task-oriented commands so an experiment cannot silently mutate the active
+  incremental index.
+- [ ] Redesign cleanup semantics after the evaluation/ingestion split:
+  condition-specific `--clean` should require explicit selectors such as
+  `--model` and fail safely when they are absent; reserve `--force-clean` for a
+  confirmed global deletion and enumerate affected artifacts before removal.
 - [ ] Fit PCA on corpus vectors and transform queries through fixed axes; keep
   PCA explanatory rather than treating it as retrieval correctness.
 - [ ] Add latency, chunk count, size distribution, and index-size reports.
@@ -154,6 +168,10 @@ them would exceed the intentionally small prototype.
   need broader automated coverage.
 - The current CLI is local and single-user. There is no API, conversation UI,
   authentication, tenant isolation, or durable conversation memory.
+- Current `--clean`/`--force-rebuild` behaviour is global: it deletes generated
+  metadata and every FAISS index, then rebuilds only the selected models. Model-
+  specific cleanup and the proposed `--force-clean` distinction are plans, not
+  implemented command semantics.
 
 ## Evidence retained from completed experiments
 
